@@ -1,28 +1,87 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { Settings as SettingsIcon, Download, Upload, Trash2, Moon, Sun } from 'lucide-react';
+import { 
+  Settings as SettingsIcon, Download, Upload, Trash2, Moon, Sun, 
+  User, BookOpen, GraduationCap, Bell, Palette, Database, Shield,
+  ChevronRight, Save, LogOut
+} from 'lucide-react';
 import { exportDB, importInto } from 'dexie-export-import';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import clsx from 'clsx';
+
+const Section = ({ title, icon: Icon, children, colorClass = "text-blue-400" }) => (
+  <section className="mx-2 glass-card p-6 rounded-[2.5rem] border border-white/10 shadow-2xl space-y-6 relative overflow-hidden group">
+    <div className={clsx("absolute -top-12 -right-12 w-24 h-24 blur-3xl opacity-10 group-hover:opacity-20 transition-all duration-700 bg-current", colorClass)} />
+    <div className="flex items-center gap-3 relative z-10">
+      <div className={clsx("p-2 rounded-xl bg-white/5 border border-white/10", colorClass)}>
+        <Icon size={18} />
+      </div>
+      <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">{title}</h2>
+    </div>
+    <div className="space-y-4 relative z-10">
+      {children}
+    </div>
+  </section>
+);
+
+const Toggle = ({ enabled, onChange }) => (
+  <button 
+    onClick={() => onChange(!enabled)}
+    className={clsx(
+      "w-12 h-6 rounded-full p-1 transition-all duration-300 relative border",
+      enabled ? "bg-blue-600 border-blue-500 shadow-[0_0_10px_rgba(37,99,235,0.4)]" : "bg-white/5 border-white/10"
+    )}
+  >
+    <motion.div 
+      animate={{ x: enabled ? 24 : 0 }}
+      className="w-4 h-4 bg-white rounded-full shadow-lg"
+    />
+  </button>
+);
 
 export default function Settings() {
   const liveSettings = useLiveQuery(() => db.settings.get(1), []);
   const [importing, setImporting] = useState(false);
+  const [localProfile, setLocalProfile] = useState({ name: '', course: '', semester: '' });
 
-  // Fallback settings to prevent blank screen
-  const settings = liveSettings || { defaultThreshold: 75 };
+  // Use a fallback to prevent blank screen
+  const settings = liveSettings || { 
+    defaultThreshold: 75, 
+    profile: { name: '', course: '', semester: '' },
+    notifications: { lowAttendanceAlert: true, dailyReminder: true }
+  };
+
+  useEffect(() => {
+    if (liveSettings?.profile) {
+      setLocalProfile(liveSettings.profile);
+    }
+  }, [liveSettings]);
+
+  const updateSettings = async (updates) => {
+    try {
+      await db.settings.put({ ...settings, id: 1, ...updates });
+    } catch (e) {
+      toast.error("Failed to save setting");
+    }
+  };
+
+  const handleProfileUpdate = async (field, value) => {
+    const newProfile = { ...localProfile, [field]: value };
+    setLocalProfile(newProfile);
+    await updateSettings({ profile: newProfile });
+  };
 
   const handleCSVExport = async () => {
     try {
       const subjects = await db.subjects.toArray();
       let csvContent = "data:text/csv;charset=utf-8,";
       csvContent += "Subject,Credits,Attended,Total,Percentage,Threshold\n";
-      
       subjects.forEach(s => {
         const percentage = s.totalClasses ? (s.attendedClasses / s.totalClasses * 100).toFixed(2) : 0;
         csvContent += `${s.name},${s.credits},${s.attendedClasses},${s.totalClasses},${percentage}%,${s.threshold}%\n`;
       });
-
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
@@ -35,7 +94,7 @@ export default function Settings() {
     }
   };
 
-  const handleExport = async () => {
+  const handleJSONExport = async () => {
     try {
       const blob = await exportDB(db);
       const url = URL.createObjectURL(blob);
@@ -45,7 +104,7 @@ export default function Settings() {
       a.click();
       URL.revokeObjectURL(url);
       toast.success("Backup downloaded!");
-    } catch (error) {
+    } catch (e) {
       toast.error('Export failed');
     }
   };
@@ -53,7 +112,6 @@ export default function Settings() {
   const handleImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
     if (confirm('Importing will overwrite your current data. Are you sure?')) {
       setImporting(true);
       const loadingToast = toast.loading('Importing data...');
@@ -69,7 +127,6 @@ export default function Settings() {
         setImporting(false);
       }
     }
-    e.target.value = null; 
   };
 
   const handleClearData = async () => {
@@ -80,95 +137,172 @@ export default function Settings() {
   };
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto pb-20">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6 max-w-2xl mx-auto pb-32"
+    >
       <header className="px-2">
         <h1 className="text-3xl font-bold text-white tracking-tight">Settings</h1>
-        <p className="text-blue-200/70 font-medium text-sm mt-0.5">App configuration & Data</p>
+        <p className="text-blue-200/70 font-medium text-sm mt-0.5">Your Academic Dashboard</p>
       </header>
 
-      {/* Preferences */}
-      <section className="mx-2 glass-card p-6 rounded-[2.5rem] space-y-6 border border-white/10">
-        <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">Preferences</h2>
-        
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-white">Attendance Threshold</h3>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Target for new subjects</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <input 
-              type="number" 
-              min="1" max="100"
-              className="bg-white/5 border border-white/10 rounded-xl p-2.5 text-white w-16 text-center text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-              value={settings.defaultThreshold}
-              onChange={async (e) => {
-                const val = Number(e.target.value);
-                await db.settings.put({ ...settings, id: 1, defaultThreshold: val });
-                toast.success("Updated", { id: 'threshold' });
-              }}
-            />
-            <span className="text-gray-500 text-xs font-bold">%</span>
+      {/* Profile Section */}
+      <Section title="Profile" icon={User} colorClass="text-purple-400">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Full Name</label>
+              <input 
+                type="text" 
+                value={localProfile.name}
+                onChange={(e) => handleProfileUpdate('name', e.target.value)}
+                placeholder="e.g., John Doe"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Course / Branch</label>
+                <input 
+                  type="text" 
+                  value={localProfile.course}
+                  onChange={(e) => handleProfileUpdate('course', e.target.value)}
+                  placeholder="e.g., CSE"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Semester</label>
+                <input 
+                  type="text" 
+                  value={localProfile.semester}
+                  onChange={(e) => handleProfileUpdate('semester', e.target.value)}
+                  placeholder="e.g., 4th"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </Section>
+
+      {/* Attendance Settings */}
+      <Section title="Attendance Settings" icon={BookOpen} colorClass="text-blue-400">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-white">Minimum Threshold</h3>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Target attendance for all subjects</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <input 
+                type="number" 
+                min="1" max="100"
+                value={settings.defaultThreshold}
+                onChange={(e) => updateSettings({ defaultThreshold: Number(e.target.value) })}
+                className="bg-white/5 border border-white/10 rounded-xl p-2.5 text-white w-16 text-center text-sm font-black focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              <span className="text-gray-500 text-xs font-black">%</span>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <input 
+              type="range" min="1" max="100" 
+              value={settings.defaultThreshold}
+              onChange={(e) => updateSettings({ defaultThreshold: Number(e.target.value) })}
+              className="w-full h-1.5 bg-white/5 rounded-full appearance-none cursor-pointer accent-blue-600"
+            />
+            <div className="flex justify-between text-[8px] font-black text-gray-600 uppercase tracking-widest px-1">
+              <span>0%</span>
+              <span>50%</span>
+              <span>100%</span>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Notifications */}
+      <Section title="Notifications" icon={Bell} colorClass="text-yellow-400">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-400/10 rounded-lg text-yellow-400"><Shield size={16} /></div>
+              <div>
+                <p className="text-sm font-bold text-white">Low Attendance Alerts</p>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter italic">Warning when below threshold</p>
+              </div>
+            </div>
+            <Toggle 
+              enabled={settings.notifications.lowAttendanceAlert} 
+              onChange={(val) => updateSettings({ notifications: { ...settings.notifications, lowAttendanceAlert: val } })} 
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-400/10 rounded-lg text-blue-400"><CalendarIcon size={16} /></div>
+              <div>
+                <p className="text-sm font-bold text-white">Daily Mark Reminder</p>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter italic">Ping to mark attendance daily</p>
+              </div>
+            </div>
+            <Toggle 
+              enabled={settings.notifications.dailyReminder} 
+              onChange={(val) => updateSettings({ notifications: { ...settings.notifications, dailyReminder: val } })} 
+            />
+          </div>
+        </div>
+      </Section>
 
       {/* Data Management */}
-      <section className="mx-2 glass-card p-6 rounded-[2.5rem] space-y-6 border border-white/10">
-        <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">Data Management</h2>
-        
-        <div className="space-y-3">
-          <button 
-            onClick={handleExport}
-            className="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5 active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-4">
-              <div className="bg-blue-500/10 p-2.5 rounded-xl text-blue-400 border border-blue-500/20"><Download size={20} /></div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-white">JSON Backup</p>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Full app data export</p>
-              </div>
-            </div>
-          </button>
+      <Section title="Data Management" icon={Database} colorClass="text-red-400">
+        <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <button 
+              onClick={handleJSONExport}
+              className="flex items-center gap-3 p-4 bg-white/5 rounded-3xl border border-white/5 hover:bg-white/10 active:scale-95 transition-all text-left"
+            >
+              <div className="p-2 bg-blue-500/10 rounded-xl text-blue-400"><Download size={18} /></div>
+              <span className="text-xs font-black text-white uppercase tracking-tighter">Export JSON</span>
+            </button>
+            <button 
+              onClick={handleCSVExport}
+              className="flex items-center gap-3 p-4 bg-white/5 rounded-3xl border border-white/5 hover:bg-white/10 active:scale-95 transition-all text-left"
+            >
+              <div className="p-2 bg-green-500/10 rounded-xl text-green-400"><Database size={18} /></div>
+              <span className="text-xs font-black text-white uppercase tracking-tighter">Export CSV</span>
+            </button>
+          </div>
 
-          <button 
-            onClick={handleCSVExport}
-            className="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5 active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-4">
-              <div className="bg-green-500/10 p-2.5 rounded-xl text-green-400 border border-green-500/20"><Download size={20} /></div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-white">Export CSV</p>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Spreadsheet compatible</p>
-              </div>
+          <label className="flex items-center justify-between p-4 bg-white/5 rounded-3xl border border-white/5 hover:bg-white/10 active:scale-95 transition-all cursor-pointer">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-500/10 rounded-xl text-yellow-400"><Upload size={18} /></div>
+              <span className="text-xs font-black text-white uppercase tracking-tighter">Restore Backup</span>
             </div>
-          </button>
-
-          <label className="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5 cursor-pointer active:scale-[0.98]">
-            <div className="flex items-center gap-4">
-              <div className="bg-yellow-500/10 p-2.5 rounded-xl text-yellow-400 border border-yellow-500/20"><Upload size={20} /></div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-white">Restore Backup</p>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">{importing ? 'Importing...' : 'Import from JSON file'}</p>
-              </div>
-            </div>
+            <ChevronRight size={16} className="text-gray-600" />
             <input type="file" accept=".json" className="hidden" onChange={handleImport} disabled={importing} />
           </label>
 
           <button 
             onClick={handleClearData}
-            className="w-full flex items-center justify-between p-4 bg-red-900/10 rounded-2xl hover:bg-red-900/20 transition-all border border-red-500/10 active:scale-[0.98]"
+            className="flex items-center justify-between p-4 bg-red-500/5 rounded-3xl border border-red-500/10 hover:bg-red-500/10 active:scale-95 transition-all"
           >
-            <div className="flex items-center gap-4">
-              <div className="bg-red-500/10 p-2.5 rounded-xl text-red-400 border border-red-500/20"><Trash2 size={20} /></div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-red-400">Wipe Data</p>
-                <p className="text-[10px] text-red-500/40 font-bold uppercase tracking-tighter">Permanently delete everything</p>
-              </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-500/10 rounded-xl text-red-500"><Trash2 size={18} /></div>
+              <span className="text-xs font-black text-red-400 uppercase tracking-tighter">Wipe All Data</span>
             </div>
+            <Shield size={16} className="text-red-900/50" />
           </button>
         </div>
-      </section>
-    </div>
+      </Section>
+
+      {/* Footer Info */}
+      <footer className="px-6 text-center py-4">
+        <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em]">Smart Attendance Tracker v1.5.0</p>
+      </footer>
+    </motion.div>
   );
 }
 

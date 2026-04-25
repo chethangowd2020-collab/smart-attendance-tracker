@@ -20,6 +20,15 @@ export const initSettings = async () => {
       id: 1,
       theme: 'dark',
       defaultThreshold: 75,
+      profile: {
+        name: '',
+        course: '',
+        semester: ''
+      },
+      notifications: {
+        lowAttendanceAlert: true,
+        dailyReminder: true
+      },
       // Default Grading Scale provided by user
       gradingScale: [
         { min: 90, max: 100, point: 10, grade: 'O' },

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { format, parseISO } from 'date-fns';
-import { Trash2, Calendar as CalendarIcon, Filter, Search, CheckCircle2, XCircle, Slash, History as HistoryIcon } from 'lucide-react';
+import { Trash2, Calendar as CalendarIcon, Filter, Search, CheckCircle2, XCircle, Slash, History as HistoryIcon, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
@@ -17,7 +18,6 @@ export default function History() {
       query = query.where('subjectId').equals(Number(selectedSubjectId));
     }
     const results = await query.toArray();
-    // Sort by date descending
     return results.sort((a, b) => b.date.localeCompare(a.date));
   }, [selectedSubjectId]);
 
@@ -59,28 +59,32 @@ export default function History() {
   });
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto pb-20">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6 max-w-2xl mx-auto pb-32"
+    >
       <header className="px-2">
-        <h1 className="text-3xl font-bold text-white tracking-tight">History</h1>
-        <p className="text-blue-200/70 font-medium text-sm mt-0.5">Logs of all marked classes</p>
+        <h1 className="text-3xl font-black text-white tracking-tight leading-none mb-1">History</h1>
+        <p className="text-blue-200/70 font-black text-[10px] uppercase tracking-widest">Attendance Audit Logs</p>
       </header>
 
       {/* Filters */}
       <div className="space-y-3 px-2">
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700" size={16} />
             <input 
               type="text" 
-              placeholder="Search subjects..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-10 pr-4 text-white text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="SEARCH LOGS..."
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner placeholder:text-gray-800"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="relative">
             <select 
-              className="bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white text-sm outline-none appearance-none pr-10"
+              className="bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-[10px] font-black uppercase tracking-widest outline-none appearance-none pr-12 shadow-inner"
               value={selectedSubjectId}
               onChange={(e) => setSelectedSubjectId(e.target.value)}
             >
@@ -89,69 +93,84 @@ export default function History() {
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
-            <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
+            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-700 pointer-events-none" size={14} />
           </div>
         </div>
       </div>
 
       {/* Records List */}
       <section className="px-2 space-y-4">
-        {!filteredRecords || filteredRecords.length === 0 ? (
-          <div className="text-center py-20 glass-card rounded-[2.5rem] border-dashed border-white/10">
-            <div className="bg-gray-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <HistoryIcon className="text-gray-500" size={32} />
-            </div>
-            <p className="text-gray-400 font-medium">No history found</p>
-          </div>
-        ) : (
-          filteredRecords.map(record => {
-            const subject = subjects?.find(s => s.id === record.subjectId);
-            if (!subject) return null;
-
-            return (
-              <div key={record.id} className="glass-card rounded-3xl p-4 flex items-center justify-between group">
-                <div className="flex items-center gap-4">
-                  <div className={clsx(
-                    "w-10 h-10 rounded-xl flex items-center justify-center",
-                    record.status === 'present' ? "bg-green-500/10 text-green-400" :
-                    record.status === 'absent' ? "bg-red-500/10 text-red-400" : "bg-gray-500/10 text-gray-400"
-                  )}>
-                    {record.status === 'present' && <CheckCircle2 size={20} />}
-                    {record.status === 'absent' && <XCircle size={20} />}
-                    {record.status === 'cancelled' && <Slash size={20} />}
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                      {subject.name}
-                      {record.timetableId && <span className="text-[8px] bg-white/5 text-gray-400 px-1 rounded border border-white/5 uppercase tracking-tighter">Scheduled</span>}
-                    </h3>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1 mt-0.5">
-                      <CalendarIcon size={10} />
-                      {format(parseISO(record.date), 'MMM do, yyyy')}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className={clsx(
-                    "text-[10px] font-black uppercase px-2 py-0.5 rounded-full border",
-                    record.status === 'present' ? "bg-green-500/10 border-green-500/20 text-green-400" :
-                    record.status === 'absent' ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-gray-500/10 border-gray-500/20 text-gray-400"
-                  )}>
-                    {record.status === 'present' ? 'Present' : record.status === 'absent' ? 'Absent' : 'Off'}
-                  </span>
-                  <button 
-                    onClick={() => handleDeleteRecord(record)}
-                    className="p-2 text-gray-600 hover:text-red-400 transition-colors sm:opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+        <AnimatePresence mode="popLayout">
+          {!filteredRecords || filteredRecords.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-24 glass-card rounded-[3rem] border-2 border-dashed border-white/5"
+            >
+              <div className="bg-white/5 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <HistoryIcon className="text-gray-700" size={32} />
               </div>
-            );
-          })
-        )}
+              <p className="text-gray-500 font-black uppercase tracking-widest">No logs found</p>
+              <p className="text-gray-700 text-[10px] font-bold mt-1 uppercase tracking-widest">Mark classes to see history</p>
+            </motion.div>
+          ) : (
+            filteredRecords.map((record, index) => {
+              const subject = subjects?.find(s => s.id === record.subjectId);
+              if (!subject) return null;
+
+              return (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(index * 0.05, 0.5) }}
+                  key={record.id} 
+                  className="glass-card rounded-[2.5rem] p-5 flex items-center justify-between group border border-white/5 relative overflow-hidden"
+                >
+                  <div className="flex items-center gap-5 relative z-10">
+                    <div className={clsx(
+                      "w-12 h-12 rounded-2xl flex items-center justify-center border",
+                      record.status === 'present' ? "bg-green-500/10 border-green-500/20 text-green-400" :
+                      record.status === 'absent' ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-gray-500/10 border-gray-500/20 text-gray-500"
+                    )}>
+                      {record.status === 'present' && <CheckCircle2 size={24} />}
+                      {record.status === 'absent' && <XCircle size={24} />}
+                      {record.status === 'cancelled' && <Slash size={24} />}
+                    </div>
+                    <div>
+                      <h3 className="text-base font-black text-white flex items-center gap-2 leading-none mb-1.5">
+                        {subject.name}
+                        {record.timetableId && <div className="p-1 bg-blue-500/20 rounded border border-blue-500/30"><Clock size={8} className="text-blue-400" /></div>}
+                      </h3>
+                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                        <CalendarIcon size={10} className="text-gray-700" />
+                        {format(parseISO(record.date), 'MMM do, yyyy')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 relative z-10">
+                    <span className={clsx(
+                      "text-[9px] font-black uppercase px-3 py-1 rounded-xl border tracking-widest",
+                      record.status === 'present' ? "bg-green-600/20 border-green-500/40 text-green-400" :
+                      record.status === 'absent' ? "bg-red-600/20 border-red-500/40 text-red-400" : "bg-gray-600/20 border-gray-500/40 text-gray-500"
+                    )}>
+                      {record.status}
+                    </span>
+                    <motion.button 
+                      whileTap={{ scale: 0.8 }}
+                      onClick={() => handleDeleteRecord(record)}
+                      className="p-3 text-gray-700 hover:text-red-400 transition-colors bg-white/5 rounded-2xl border border-white/5 group-hover:opacity-100 opacity-0 sm:opacity-0"
+                    >
+                      <Trash2 size={16} />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
+        </AnimatePresence>
       </section>
-    </div>
+    </motion.div>
   );
 }

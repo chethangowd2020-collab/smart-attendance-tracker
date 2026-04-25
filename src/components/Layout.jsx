@@ -1,5 +1,6 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Home, Book, Calendar, GraduationCap, Settings, History } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
 const navItems = [
@@ -12,70 +13,113 @@ const navItems = [
 ];
 
 export default function Layout() {
-  return (
-    <div className="flex flex-col h-screen overflow-hidden text-gray-100 bg-transparent">
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto pb-20 md:pb-0 hide-scrollbar">
-        <div className="max-w-4xl mx-auto w-full p-4 md:p-6 lg:p-8">
-          <Outlet />
-        </div>
-      </main>
+  const location = useLocation();
 
-      {/* Bottom Navigation for Mobile / Side Navigation for Desktop */}
-      <nav className="fixed bottom-0 left-0 w-full glass pb-safe z-50 md:hidden border-t-0 border-b-0 rounded-t-2xl">
-        <div className="flex justify-around items-center h-16">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                clsx(
-                  'flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors',
-                  isActive ? 'text-blue-400 font-bold' : 'text-gray-400 hover:text-gray-200'
-                )
-              }
-            >
-              <item.icon size={20} />
-              <span className="text-[10px]">{item.label}</span>
-            </NavLink>
-          ))}
-        </div>
-      </nav>
-      
+  return (
+    <div className="flex flex-col h-screen overflow-hidden text-gray-100 bg-[#0a0a0a]">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col fixed top-0 left-0 h-full w-64 glass border-y-0 border-l-0">
-        <div className="p-6">
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <GraduationCap className="text-blue-500" />
-            Academics Tracker
-          </h1>
+      <aside className="hidden md:flex flex-col fixed top-0 left-0 h-full w-72 bg-black/40 backdrop-blur-3xl border-r border-white/5 z-50">
+        <div className="p-8">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-3"
+          >
+            <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/30">
+              <GraduationCap className="text-white" size={24} />
+            </div>
+            <div>
+              <h1 className="text-lg font-black text-white tracking-tighter leading-none">ATTENDANCE</h1>
+              <p className="text-[10px] font-black text-blue-500 tracking-[0.2em]">JACK PRO</p>
+            </div>
+          </motion.div>
         </div>
-        <nav className="flex-1 px-4 space-y-2 mt-4">
-          {navItems.map((item) => (
+
+        <nav className="flex-1 px-6 space-y-2 mt-4">
+          {navItems.map((item, index) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
                 clsx(
-                  'flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium',
-                  isActive ? 'bg-blue-500/20 text-blue-400 shadow-lg shadow-blue-500/10' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+                  'flex items-center gap-4 px-5 py-4 rounded-[1.5rem] transition-all duration-300 font-black text-[11px] uppercase tracking-widest group relative overflow-hidden',
+                  isActive 
+                    ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/20' 
+                    : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'
                 )
               }
             >
-              <item.icon size={20} />
+              <item.icon size={18} />
               {item.label}
+              <motion.div 
+                className="absolute right-4 w-1.5 h-1.5 rounded-full bg-white opacity-0 group-hover:opacity-20"
+                layoutId="nav-indicator"
+              />
             </NavLink>
           ))}
         </nav>
       </aside>
 
-      {/* For desktop, adjust main content margin */}
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto pb-32 md:pb-0 hide-scrollbar md:ml-72">
+        <div className="max-w-4xl mx-auto w-full p-6 md:p-10 lg:p-12 relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 1.02 }}
+              transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </main>
+
+      {/* Bottom Navigation for Mobile */}
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-lg z-50 md:hidden">
+        <div className="bg-black/60 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-2 flex justify-around items-center shadow-2xl shadow-black/50">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                clsx(
+                  'relative flex flex-col items-center justify-center py-3 px-4 rounded-3xl transition-all duration-500',
+                  isActive ? 'text-white' : 'text-gray-600'
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.div 
+                      layoutId="bottom-nav-pill"
+                      className="absolute inset-0 bg-blue-600 rounded-3xl shadow-lg shadow-blue-600/30"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <div className="relative z-10 flex flex-col items-center">
+                    <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                    {isActive && (
+                      <motion.span 
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-[8px] font-black uppercase tracking-tighter mt-1"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </div>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      </nav>
+      
       <style>{`
-        @media (min-width: 768px) {
-          main {
-            margin-left: 16rem; /* 64 * 0.25rem = 16rem */
-          }
-        }
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
@@ -85,6 +129,11 @@ export default function Layout() {
         }
         .pb-safe {
           padding-bottom: env(safe-area-inset-bottom);
+        }
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
         }
       `}</style>
     </div>

@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { Plus, ChevronDown, ChevronUp, Save, GraduationCap, Download } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Save, GraduationCap, Download, TrendingUp, Award, Target, XCircle } from 'lucide-react';
 import { calculateSGPA, calculateCGPA, calculateSubjectTotal, calculateGrade } from '../utils/academicUtils';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -50,7 +51,6 @@ export default function Academics() {
   };
 
   const handleMarkChange = async (subjectId, type, obtainedMarks) => {
-    // Check if mark entry exists
     const existingMark = allMarks?.find(m => m.subjectId === subjectId && m.type === type);
     try {
       if (existingMark) {
@@ -59,28 +59,24 @@ export default function Academics() {
         await db.marks.add({
           subjectId,
           type,
-          maxMarks: type === 'semExam' ? 100 : (type === 'internal' ? 30 : 20), // Generic max marks
+          maxMarks: type === 'semExam' ? 100 : (type === 'internal' ? 30 : 20),
           obtainedMarks: Number(obtainedMarks)
         });
       }
-      toast.success("Marks saved", { id: `mark-${subjectId}-${type}` }); // Use ID to prevent toast spam
+      toast.success("Marks saved", { id: `mark-${subjectId}-${type}` });
     } catch (e) {
       toast.error("Failed to save marks");
     }
   };
 
-  const toggleSubject = (id) => {
-    setExpandedSubjectId(expandedSubjectId === id ? null : id);
-  };
-
   const handleExportPDF = async () => {
     if (!reportRef.current) return;
     setIsExporting(true);
-    toast.loading("Generating PDF...", { id: "pdf-export" });
+    const loadingToast = toast.loading("Generating Report...");
     try {
       const canvas = await html2canvas(reportRef.current, {
         scale: 2,
-        backgroundColor: '#111827', // Match html background
+        backgroundColor: '#0a0a0a',
         logging: false,
         useCORS: true
       });
@@ -90,213 +86,271 @@ export default function Academics() {
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Academics_Report_${activeSemester?.name || 'All'}.pdf`);
-      toast.success("PDF Downloaded!", { id: "pdf-export" });
+      pdf.save(`Academic_Report_${activeSemester?.name || 'Overview'}.pdf`);
+      toast.success("Downloaded PDF", { id: loadingToast });
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to generate PDF", { id: "pdf-export" });
+      toast.error("Export failed", { id: loadingToast });
     } finally {
       setIsExporting(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6 max-w-2xl mx-auto pb-32"
+    >
+      <header className="flex items-center justify-between px-2">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <GraduationCap className="text-blue-500" />
-            Academics
-          </h1>
-          <p className="text-gray-400 text-sm mt-1">Track your SGPA and CGPA</p>
+          <h1 className="text-3xl font-black text-white tracking-tight leading-none mb-1">Academics</h1>
+          <p className="text-blue-200/70 font-black text-[10px] uppercase tracking-widest">Marks & Performance</p>
         </div>
         <div className="flex gap-2">
-          {semesters?.length > 0 && (
-            <button 
-              onClick={handleExportPDF}
-              disabled={isExporting}
-              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-sm text-white rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50"
-            >
-              <Download size={16} /> <span className="hidden sm:inline">Export</span>
-            </button>
-          )}
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 text-sm text-white rounded-lg transition-colors flex items-center gap-1 font-medium"
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
+            onClick={handleExportPDF}
+            disabled={isExporting || !semesters?.length}
+            className="w-12 h-12 glass-card rounded-2xl flex items-center justify-center text-blue-400 border border-white/5 active:bg-white/10 disabled:opacity-30"
           >
-            <Plus size={16} /> Semester
-          </button>
+            <Download size={20} />
+          </motion.button>
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setIsModalOpen(true)}
+            className="w-12 h-12 bg-blue-600 shadow-xl shadow-blue-600/20 text-white rounded-2xl flex items-center justify-center transition-all"
+          >
+            <Plus size={24} strokeWidth={3} />
+          </motion.button>
         </div>
       </header>
 
       {/* Semester Selector */}
-      {semesters?.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
-          {semesters.map(sem => (
-            <button
-              key={sem.id}
-              onClick={() => setActiveSemesterId(sem.id)}
-              className={clsx(
-                "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all shadow-sm",
-                activeSemesterId === sem.id ? "bg-white text-gray-900 shadow-white/20" : "glass hover:bg-white/10 text-gray-300"
-              )}
-            >
-              {sem.name}
-            </button>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {semesters?.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex gap-3 overflow-x-auto px-2 pb-2 hide-scrollbar"
+          >
+            {semesters.map(sem => (
+              <button
+                key={sem.id}
+                onClick={() => setActiveSemesterId(sem.id)}
+                className={clsx(
+                  "px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border",
+                  activeSemesterId === sem.id ? "bg-white text-black border-white shadow-xl shadow-white/10" : "bg-white/5 text-gray-500 border-white/5 hover:bg-white/10"
+                )}
+              >
+                {sem.name}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Printable Report Section */}
-      <div ref={reportRef} className="space-y-6 p-2 rounded-2xl">
+      <div ref={reportRef} className="space-y-6 px-2">
         {/* GPA Dashboard */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="glass-card p-5 rounded-2xl text-center">
-            <p className="text-gray-300 text-sm mb-1 font-medium">Current CGPA</p>
-            <p className="text-4xl font-bold text-blue-400 drop-shadow-md">{cgpa}</p>
-          </div>
-          <div className="glass-card p-5 rounded-2xl text-center">
-            <p className="text-gray-300 text-sm mb-1 font-medium">Semester SGPA</p>
-            <p className="text-4xl font-bold text-green-400 drop-shadow-md">{sgpa}</p>
-            {activeSemester?.targetSgpa && (
-              <p className="text-xs text-gray-400 mt-1">Target: <span className="font-medium text-white">{activeSemester.targetSgpa}</span></p>
-            )}
-          </div>
+          <motion.div 
+            whileHover={{ y: -5 }}
+            className="glass-card p-6 rounded-[2.5rem] border border-white/5 relative overflow-hidden group"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/10 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-blue-600/20 transition-all duration-700" />
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <Award className="text-blue-500/50 mb-2" size={20} />
+              <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Overall CGPA</p>
+              <p className="text-4xl font-black text-white">{cgpa}</p>
+            </div>
+          </motion.div>
+          <motion.div 
+            whileHover={{ y: -5 }}
+            className="glass-card p-6 rounded-[2.5rem] border border-white/5 relative overflow-hidden group"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-green-600/10 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-green-600/20 transition-all duration-700" />
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <TrendingUp className="text-green-500/50 mb-2" size={20} />
+              <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Sem SGPA</p>
+              <p className="text-4xl font-black text-white">{sgpa}</p>
+              {activeSemester?.targetSgpa && (
+                <div className="mt-2 flex items-center gap-1.5 px-2 py-0.5 bg-green-500/10 rounded-full border border-green-500/20">
+                   <Target size={10} className="text-green-500" />
+                   <span className="text-[9px] font-black text-green-500 uppercase">{activeSemester.targetSgpa} Goal</span>
+                </div>
+              )}
+            </div>
+          </motion.div>
         </div>
 
         {/* Subjects & Marks */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-white">Subject Marks</h2>
-          {activeSubjects.length === 0 ? (
-            <p className="text-gray-400 italic text-sm glass-card p-4 rounded-xl text-center">No subjects found for this semester. Add them in the Manage Classes tab.</p>
-          ) : (
-            activeSubjects.map(sub => {
-              const subMarks = allMarks?.filter(m => m.subjectId === sub.id) || [];
-              const total = calculateSubjectTotal(subMarks);
-              const grade = settings ? calculateGrade(total, settings.gradingScale) : null;
-              const internal = subMarks.find(m => m.type === 'internal')?.obtainedMarks || '';
-              const assignment = subMarks.find(m => m.type === 'assignment')?.obtainedMarks || '';
-              const semExam = subMarks.find(m => m.type === 'semExam')?.obtainedMarks || '';
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Subject Performance</h2>
+            <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">{activeSubjects.length} Courses</span>
+          </div>
 
-              const isExpanded = expandedSubjectId === sub.id || isExporting; // Auto-expand when exporting
-
-              return (
-                <div key={sub.id} className="glass-card rounded-xl overflow-hidden transition-all">
-                  <div 
-                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
-                    onClick={() => toggleSubject(sub.id)}
-                  >
-                    <div>
-                      <h3 className="font-semibold text-white">{sub.name}</h3>
-                      <p className="text-xs text-gray-400">{sub.credits} Credits</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-white">{total} <span className="text-gray-500 font-normal">/100</span></p>
-                        <p className={`text-xs font-bold ${grade?.point === 0 ? 'text-red-400' : 'text-green-400'}`}>
-                          {grade ? `Grade ${grade.grade}` : 'N/A'}
-                        </p>
-                      </div>
-                      {!isExporting && (isExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />)}
-                    </div>
-                  </div>
-
-                  {isExpanded && (
-                    <div className="p-4 bg-black/20 border-t border-white/5">
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-xs text-gray-400 mb-1 font-medium">Internals</label>
-                          <input 
-                            type="number" 
-                            min="0" max="100"
-                            value={internal}
-                            onChange={(e) => handleMarkChange(sub.id, 'internal', e.target.value)}
-                            className="w-full bg-gray-800/50 border border-gray-700/50 rounded-lg p-2 text-sm text-white focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                            placeholder="e.g. 25"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-400 mb-1 font-medium">Assignments</label>
-                          <input 
-                            type="number" 
-                            min="0" max="100"
-                            value={assignment}
-                            onChange={(e) => handleMarkChange(sub.id, 'assignment', e.target.value)}
-                            className="w-full bg-gray-800/50 border border-gray-700/50 rounded-lg p-2 text-sm text-white focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                            placeholder="e.g. 10"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-400 mb-1 font-medium">Sem Exam</label>
-                          <input 
-                            type="number" 
-                            min="0" max="100"
-                            value={semExam}
-                            onChange={(e) => handleMarkChange(sub.id, 'semExam', e.target.value)}
-                            className="w-full bg-gray-800/50 border border-gray-700/50 rounded-lg p-2 text-sm text-white focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                            placeholder="e.g. 65"
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-3 text-xs text-gray-500 flex items-center justify-between">
-                        <p>Changes are saved automatically.</p>
-                        <Save size={14} />
-                      </div>
-                    </div>
-                  )}
+          <AnimatePresence mode="popLayout">
+            {activeSubjects.length === 0 ? (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-16 glass-card rounded-[2.5rem] border-2 border-dashed border-white/5"
+              >
+                <div className="bg-white/5 w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                  <GraduationCap size={24} className="text-gray-700" />
                 </div>
-              );
-            })
-          )}
+                <p className="text-gray-500 text-sm font-black uppercase tracking-widest">No subjects found</p>
+                <p className="text-gray-700 text-[10px] font-bold mt-1 uppercase">Add subjects in 'Manage' tab</p>
+              </motion.div>
+            ) : (
+              activeSubjects.map((sub, index) => {
+                const subMarks = allMarks?.filter(m => m.subjectId === sub.id) || [];
+                const total = calculateSubjectTotal(subMarks);
+                const grade = settings ? calculateGrade(total, settings.gradingScale) : null;
+                const isExpanded = expandedSubjectId === sub.id || isExporting;
+
+                return (
+                  <motion.div 
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    key={sub.id} 
+                    className="glass-card rounded-[2.5rem] overflow-hidden border border-white/5 group"
+                  >
+                    <div 
+                      className="p-6 flex items-center justify-between cursor-pointer active:bg-white/5 transition-colors"
+                      onClick={() => setExpandedSubjectId(isExpanded ? null : sub.id)}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={clsx(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xs border shrink-0",
+                          total >= 40 ? "bg-blue-500/10 border-blue-500/20 text-blue-400" : "bg-red-500/10 border-red-500/20 text-red-400"
+                        )}>
+                          {grade?.grade || 'F'}
+                        </div>
+                        <div>
+                          <h3 className="text-base font-black text-white leading-none mb-1.5">{sub.name}</h3>
+                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{sub.credits} Credits</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-xl font-black text-white leading-none mb-1">{total}</p>
+                          <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Total / 100</p>
+                        </div>
+                        {!isExporting && (
+                          <motion.div 
+                            animate={{ rotate: isExpanded ? 180 : 0 }}
+                            className="p-2 bg-white/5 rounded-xl text-gray-600"
+                          >
+                            <ChevronDown size={16} />
+                          </motion.div>
+                        )}
+                      </div>
+                    </div>
+
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="px-6 pb-6 pt-2 border-t border-white/5 bg-white/[0.02] space-y-5"
+                        >
+                          <div className="grid grid-cols-3 gap-3">
+                            {[
+                              { label: 'Internals', type: 'internal', max: 30 },
+                              { label: 'Assign', type: 'assignment', max: 20 },
+                              { label: 'Sem Exam', type: 'semExam', max: 50 }
+                            ].map(markType => (
+                              <div key={markType.type}>
+                                <label className="block text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">{markType.label}</label>
+                                <input 
+                                  type="number" 
+                                  value={subMarks.find(m => m.type === markType.type)?.obtainedMarks || ''}
+                                  onChange={(e) => handleMarkChange(sub.id, markType.type, e.target.value)}
+                                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white font-black focus:ring-1 focus:ring-blue-500 outline-none text-center shadow-inner"
+                                  placeholder="0"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex items-center justify-between text-[9px] font-black text-gray-600 uppercase tracking-widest px-1">
+                            <div className="flex items-center gap-1.5">
+                              <Save size={10} /> Auto-saving enabled
+                            </div>
+                            <span>Grade: {grade?.grade || 'None'}</span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
       {/* Add Semester Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="glass-card p-6 rounded-2xl w-full max-w-md shadow-2xl border border-white/10">
-            <h2 className="text-xl font-bold text-white mb-4">Add Semester</h2>
-            <form onSubmit={handleAddSemester} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Semester Name</label>
-                <input 
-                  type="text" 
-                  required
-                  value={semesterForm.name}
-                  onChange={(e) => setSemesterForm({...semesterForm, name: e.target.value})}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  placeholder="e.g. Semester 2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Target SGPA</label>
-                <input 
-                  type="number" 
-                  required min="1" max="10" step="0.1"
-                  value={semesterForm.targetSgpa}
-                  onChange={(e) => setSemesterForm({...semesterForm, targetSgpa: e.target.value})}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-              <div className="flex gap-3 mt-6">
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-medium shadow-lg shadow-blue-500/20"
-                >
-                  Create
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-card p-8 rounded-[3rem] w-full max-w-md shadow-2xl border border-white/10 relative z-10"
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight">New Semester</h2>
+                <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                  <XCircle size={28} />
                 </button>
               </div>
-            </form>
+              <form onSubmit={handleAddSemester} className="space-y-6">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Semester Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={semesterForm.name}
+                    onChange={(e) => setSemesterForm({...semesterForm, name: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none font-black placeholder:text-gray-800"
+                    placeholder="e.g. SEMESTER 4"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Target SGPA</label>
+                  <input 
+                    type="number" 
+                    required min="1" max="10" step="0.1"
+                    value={semesterForm.targetSgpa}
+                    onChange={(e) => setSemesterForm({...semesterForm, targetSgpa: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none font-black text-center"
+                  />
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button 
+                    type="submit" 
+                    className="flex-1 py-5 bg-blue-600 text-white rounded-3xl transition-all font-black uppercase tracking-widest shadow-2xl shadow-blue-600/40 active:scale-95"
+                  >
+                    Create
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

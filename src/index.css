@@ -7,42 +7,56 @@
   --color-secondary-dark: #059669;
   --color-danger: #ef4444;
   --color-danger-dark: #dc2626;
-  --color-background-dark: #0f172a;
-  --color-surface-dark: #1e293b;
-  --color-surface-hover-dark: #334155;
-  --color-text-dark: #f8fafc;
-  --color-text-muted-dark: #94a3b8;
+  --color-background-dark: #0a0a0a;
+  --color-surface-dark: #121212;
 }
 
 @layer base {
   :root {
-    background-color: var(--color-background-dark);
-    color: var(--color-text-dark);
+    background-color: #0a0a0a;
+    color: #ffffff;
     color-scheme: dark;
   }
 }
 
 body {
   margin: 0;
-  font-family: sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: radial-gradient(circle at 10% 20%, rgb(17, 24, 39) 0%, rgb(31, 41, 55) 90%);
+  background-color: #0a0a0a;
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(37, 99, 235, 0.03) 0%, transparent 50%);
   background-attachment: fixed;
-  color: #f8fafc;
+  color: #ffffff;
 }
 
 html {
-  background-color: #111827;
-  color: #f8fafc;
+  background-color: #0a0a0a;
 }
 
 /* Glassmorphism utility */
 @layer utilities {
   .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
+    @apply bg-black/40 backdrop-blur-3xl border border-white/10 shadow-2xl;
   }
   .glass-card {
-    @apply bg-gray-900/40 backdrop-blur-lg border border-gray-700/50 shadow-2xl;
+    @apply bg-white/[0.03] backdrop-blur-3xl border border-white/5 shadow-2xl;
   }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

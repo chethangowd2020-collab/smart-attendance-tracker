@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { Plus, Trash2, Edit, Calendar, XCircle, MoreVertical, Info, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Edit, Calendar, XCircle, MoreVertical, Info, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
@@ -101,30 +102,35 @@ export default function Subjects() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      {/* App-like Header */}
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6 max-w-2xl mx-auto pb-32"
+    >
       <div className="flex items-center justify-between px-2">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Manage</h1>
-          <p className="text-sm text-blue-200/70">Subjects & Weekly Schedule</p>
+          <h1 className="text-3xl font-black text-white tracking-tight">Manage</h1>
+          <p className="text-blue-200/70 font-black text-[10px] uppercase tracking-widest mt-1">Subjects & Schedule</p>
         </div>
         {activeTab === 'subjects' && (
-          <button 
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={handleOpenModal}
-            className="p-2.5 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/20 text-white rounded-full transition-all active:scale-95"
+            className="w-12 h-12 bg-blue-600 shadow-xl shadow-blue-600/20 text-white rounded-2xl flex items-center justify-center transition-all"
           >
-            <Plus size={24} />
-          </button>
+            <Plus size={28} strokeWidth={3} />
+          </motion.button>
         )}
       </div>
 
-      {/* Segmented Control Tabs */}
-      <div className="flex p-1.5 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 mx-2">
+      <div className="flex p-1.5 bg-white/5 backdrop-blur-md rounded-[2rem] border border-white/10 mx-2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-blue-600/5 blur-xl pointer-events-none" />
         <button
           onClick={() => setActiveTab('subjects')}
           className={clsx(
-            "flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200",
-            activeTab === 'subjects' ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" : "text-gray-400 hover:text-gray-200"
+            "flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-[1.5rem] transition-all duration-300 relative z-10",
+            activeTab === 'subjects' ? "bg-blue-600 text-white shadow-xl shadow-blue-600/20" : "text-gray-500 hover:text-gray-200"
           )}
         >
           Subjects
@@ -132,283 +138,322 @@ export default function Subjects() {
         <button
           onClick={() => setActiveTab('timetable')}
           className={clsx(
-            "flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200",
-            activeTab === 'timetable' ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" : "text-gray-400 hover:text-gray-200"
+            "flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-[1.5rem] transition-all duration-300 relative z-10",
+            activeTab === 'timetable' ? "bg-blue-600 text-white shadow-xl shadow-blue-600/20" : "text-gray-500 hover:text-gray-200"
           )}
         >
           Timetable
         </button>
       </div>
 
-      {/* Content Areas */}
       <div className="px-2">
-        {activeTab === 'subjects' ? (
-          <div className="space-y-4">
-            {!subjects || subjects.length === 0 ? (
-              <div className="text-center py-16 glass-card rounded-3xl border-dashed border-white/20">
-                <div className="bg-blue-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="text-blue-400" size={32} />
+        <AnimatePresence mode="wait">
+          {activeTab === 'subjects' ? (
+            <motion.div 
+              key="subjects"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="space-y-4"
+            >
+              {!subjects || subjects.length === 0 ? (
+                <div className="text-center py-20 glass-card rounded-[3rem] border-2 border-dashed border-white/5">
+                  <div className="bg-white/5 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <Calendar className="text-gray-700" size={32} />
+                  </div>
+                  <p className="text-gray-500 font-black uppercase tracking-widest">No subjects yet</p>
+                  <button onClick={handleOpenModal} className="mt-4 text-blue-400 text-[10px] font-black uppercase tracking-widest hover:text-blue-300">
+                    + Add First Subject
+                  </button>
                 </div>
-                <p className="text-gray-300 font-medium">No subjects yet</p>
-                <button onClick={handleOpenModal} className="mt-4 text-blue-400 text-sm font-bold hover:text-blue-300">
-                  + ADD FIRST SUBJECT
-                </button>
-              </div>
-            ) : (
-              subjects.map(sub => {
-                const percentage = sub.totalClasses === 0 ? 0 : (sub.attendedClasses / sub.totalClasses) * 100;
-                const isSafe = percentage >= sub.threshold;
-                const isExpanded = expandedSubjectId === sub.id;
+              ) : (
+                subjects.map(sub => {
+                  const percentage = sub.totalClasses === 0 ? 0 : (sub.attendedClasses / sub.totalClasses) * 100;
+                  const isSafe = percentage >= sub.threshold;
+                  const isExpanded = expandedSubjectId === sub.id;
 
+                  return (
+                    <motion.div 
+                      layout
+                      key={sub.id} 
+                      className="glass-card rounded-[2.5rem] overflow-hidden border border-white/5"
+                    >
+                      <div className="p-6 flex items-center gap-5 cursor-pointer" onClick={() => setExpandedSubjectId(isExpanded ? null : sub.id)}>
+                        <div className={clsx(
+                          "w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xs border shrink-0",
+                          isSafe ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-red-500/10 border-red-500/20 text-red-400"
+                        )}>
+                          {Math.round(percentage)}%
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-black text-white truncate leading-none mb-2">{sub.name}</h3>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{sub.attendedClasses}/{sub.totalClasses} Classes</span>
+                            <span className="w-1 h-1 rounded-full bg-gray-800"></span>
+                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{sub.credits} Credits</span>
+                          </div>
+                        </div>
+
+                        <motion.button 
+                          whileTap={{ scale: 0.8 }}
+                          onClick={(e) => { e.stopPropagation(); handleDeleteSubject(sub.id); }} 
+                          className="p-3 text-gray-700 hover:text-red-400 transition-colors bg-white/5 rounded-2xl border border-white/5"
+                        >
+                          <Trash2 size={18} />
+                        </motion.button>
+                      </div>
+
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div 
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="px-6 pb-6 pt-2 border-t border-white/5 space-y-4"
+                          >
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="p-4 bg-white/5 rounded-3xl border border-white/5">
+                                <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Status</p>
+                                <div className="flex items-center gap-2">
+                                  {isSafe ? <CheckCircle2 className="text-green-400" size={16} /> : <AlertCircle className="text-red-400" size={16} />}
+                                  <span className={clsx("text-xs font-black uppercase", isSafe ? "text-green-400" : "text-red-400")}>
+                                    {isSafe ? "Safe Zone" : "Danger"}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-4 bg-white/5 rounded-3xl border border-white/5">
+                                <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Target</p>
+                                <span className="text-xs font-black text-white uppercase">{sub.threshold}% Goal</span>
+                              </div>
+                            </div>
+                            
+                            <div className="p-5 bg-white/5 rounded-3xl border border-white/5 space-y-3">
+                              <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Smart Predictions</p>
+                              <div className="flex justify-between items-center">
+                                <span className="text-[11px] font-bold text-gray-400">If you miss next 2:</span>
+                                <span className="text-red-400 font-black text-xs">{(((sub.attendedClasses) / (sub.totalClasses + 2)) * 100).toFixed(1)}%</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-[11px] font-bold text-gray-400">If you attend next 3:</span>
+                                <span className="text-green-400 font-black text-xs">{(((sub.attendedClasses + 3) / (sub.totalClasses + 3)) * 100).toFixed(1)}%</span>
+                              </div>
+                            </div>
+
+                            <div className={clsx(
+                              "p-4 rounded-3xl border flex items-center gap-4",
+                              isSafe ? "bg-blue-600/10 border-blue-600/20 text-blue-400" : "bg-red-600/10 border-red-600/20 text-red-400"
+                            )}>
+                              <Info size={20} />
+                              <p className="text-[11px] font-bold leading-snug">
+                                {isSafe ? (
+                                  <>You can safely bunk <span className="font-black text-white px-1.5 py-0.5 bg-white/10 rounded-lg">{Math.floor((100 * sub.attendedClasses - sub.threshold * sub.totalClasses) / sub.threshold)}</span> classes.</>
+                                ) : (
+                                  <>Attend <span className="font-black text-white px-1.5 py-0.5 bg-white/10 rounded-lg">{Math.ceil((sub.threshold * sub.totalClasses - 100 * sub.attendedClasses) / (100 - sub.threshold))}</span> more to reach target.</>
+                                )}
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })
+              )}
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="timetable"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              {DAYS.map((day, index) => {
+                const dbDayIndex = (index + 1) % 7;
+                const dayEntries = timetable?.filter(t => t.dayOfWeek === dbDayIndex) || [];
+                
                 return (
-                  <div key={sub.id} className="glass-card rounded-2xl overflow-hidden transition-all duration-300">
-                    <div className="p-4 flex items-center gap-4">
-                      {/* Attendance Indicator Circle (Mini) */}
-                      <div className={clsx(
-                        "w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm",
-                        isSafe ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
-                      )}>
-                        {Math.round(percentage)}%
+                  <div key={day} className="space-y-4">
+                    <div className="flex items-center justify-between px-2">
+                      <div className="flex items-center gap-2">
+                        <Clock size={14} className="text-blue-400" />
+                        <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{day}</h3>
                       </div>
-
-                      <div className="flex-1 min-w-0" onClick={() => setExpandedSubjectId(isExpanded ? null : sub.id)}>
-                        <h3 className="text-base font-bold text-white truncate">{sub.name}</h3>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-gray-400 font-medium">{sub.attendedClasses}/{sub.totalClasses} classes</span>
-                          <span className="w-1 h-1 rounded-full bg-gray-600"></span>
-                          <span className="text-xs text-gray-400 font-medium">{sub.credits} credits</span>
-                        </div>
-                        {/* Linear Progress Bar */}
-                        <div className="w-full h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
-                          <div 
-                            className={clsx("h-full transition-all duration-500", isSafe ? "bg-green-500" : "bg-red-500")}
-                            style={{ width: `${Math.min(100, percentage)}%` }}
-                          />
-                        </div>
+                      <div className="relative">
+                        <select 
+                          className="opacity-0 absolute inset-0 cursor-pointer w-10 h-10"
+                          onChange={(e) => {
+                            handleAddTimetableEntry(dbDayIndex, e.target.value);
+                            e.target.value = '';
+                          }}
+                          defaultValue=""
+                        >
+                          <option value="" disabled>+</option>
+                          {subjects?.map(s => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                        </select>
+                        <motion.div whileTap={{ scale: 0.9 }} className="w-10 h-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center text-blue-400 pointer-events-none">
+                          <Plus size={20} />
+                        </motion.div>
                       </div>
-
-                      <button onClick={() => handleDeleteSubject(sub.id)} className="p-2 text-gray-500 hover:text-red-400 transition-colors">
-                        <Trash2 size={18} />
-                      </button>
                     </div>
 
-                    {/* Expandable Details (Smart Prediction) */}
-                    {isExpanded && (
-                      <div className="px-4 pb-4 pt-2 border-t border-white/5 bg-white/2 space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Safety Status</p>
-                            <div className="flex items-center gap-2">
-                              {isSafe ? <CheckCircle2 className="text-green-400" size={14} /> : <AlertCircle className="text-red-400" size={14} />}
-                              <span className={clsx("text-sm font-bold", isSafe ? "text-green-400" : "text-red-400")}>
-                                {isSafe ? "Safe Zone" : "Danger Zone"}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Threshold</p>
-                            <span className="text-sm font-bold text-white">{sub.threshold}%</span>
-                          </div>
+                    <div className="space-y-3">
+                      {dayEntries.length === 0 ? (
+                        <div className="py-6 border-2 border-dashed border-white/5 rounded-[2rem] text-center bg-white/2">
+                          <p className="text-[10px] text-gray-700 font-black uppercase tracking-widest italic">Holiday / Free Day</p>
                         </div>
-                        
-                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 space-y-2">
-                          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Attendance Scenarios</p>
-                          <div className="flex justify-between text-xs font-medium">
-                            <span className="text-gray-400">If you miss next 2 classes:</span>
-                            <span className="text-red-400">{(((sub.attendedClasses) / (sub.totalClasses + 2)) * 100).toFixed(1)}%</span>
-                          </div>
-                          <div className="flex justify-between text-xs font-medium">
-                            <span className="text-gray-400">If you attend next 3 classes:</span>
-                            <span className="text-green-400">{(((sub.attendedClasses + 3) / (sub.totalClasses + 3)) * 100).toFixed(1)}%</span>
-                          </div>
-                        </div>
-
-                        {!isSafe && (
-                          <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/20">
-                            <p className="text-xs text-red-300 font-medium">
-                              Need to attend <span className="font-bold text-white">{Math.ceil((sub.threshold * sub.totalClasses - 100 * sub.attendedClasses) / (100 - sub.threshold))}</span> more classes to reach target.
-                            </p>
-                          </div>
-                        )}
-                        {isSafe && percentage > sub.threshold && (
-                          <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                            <p className="text-xs text-blue-300 font-medium">
-                              You can safely bunk <span className="font-bold text-white">{Math.floor((100 * sub.attendedClasses - sub.threshold * sub.totalClasses) / sub.threshold)}</span> classes.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      ) : (
+                        dayEntries.map((entry, idx) => {
+                          const subject = subjects?.find(s => s.id === entry.subjectId);
+                          if (!subject) return null;
+                          return (
+                            <motion.div 
+                              layout
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              key={entry.id} 
+                              className="flex items-center justify-between p-5 bg-white/5 backdrop-blur-md rounded-[2rem] border border-white/5 group active:bg-white/10 transition-all shadow-lg"
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-blue-600/10 border border-blue-600/20 rounded-xl flex items-center justify-center text-blue-400 font-black text-xs">
+                                  {idx + 1}
+                                </div>
+                                <span className="font-black text-white text-sm tracking-tight">{subject.name}</span>
+                              </div>
+                              <button onClick={() => handleDeleteTimetableEntry(entry.id)} className="p-2.5 text-gray-700 hover:text-red-400 bg-white/5 rounded-xl border border-white/5 transition-colors">
+                                <XCircle size={18} />
+                              </button>
+                            </motion.div>
+                          );
+                        })
+                      )}
+                    </div>
                   </div>
                 );
-              })
-            )}
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {DAYS.map((day, index) => {
-              // Convert JS index (0=Sun) to our index (0=Mon)
-              // Wait, the original code used 0=Sun. Let's fix that to match DAYS array.
-              // Original code: dayOfWeek is today.getDay() (0-6, Sun-Sat).
-              // My DAYS array: Mon-Sun.
-              // So: Mon=0, Tue=1... Sun=6.
-              // Mapping: (index + 1) % 7 will match the standard getDay() 0=Sun, 1=Mon.
-              const dbDayIndex = (index + 1) % 7;
-              const dayEntries = timetable?.filter(t => t.dayOfWeek === dbDayIndex) || [];
-              
-              return (
-                <div key={day} className="space-y-3">
-                  <div className="flex items-center justify-between px-1">
-                    <h3 className="text-sm font-black text-gray-500 uppercase tracking-widest">{day}</h3>
-                    <div className="relative">
-                      <select 
-                        className="opacity-0 absolute inset-0 cursor-pointer w-8 h-8"
-                        onChange={(e) => {
-                          handleAddTimetableEntry(dbDayIndex, e.target.value);
-                          e.target.value = '';
-                        }}
-                        defaultValue=""
-                      >
-                        <option value="" disabled>+</option>
-                        {subjects?.map(s => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                      </select>
-                      <div className="p-1.5 bg-white/5 rounded-lg border border-white/10 text-blue-400 pointer-events-none">
-                        <Plus size={16} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    {dayEntries.length === 0 ? (
-                      <div className="py-4 border-2 border-dashed border-white/5 rounded-2xl text-center">
-                        <p className="text-xs text-gray-600 font-medium">Holiday / No classes</p>
-                      </div>
-                    ) : (
-                      dayEntries.map(entry => {
-                        const subject = subjects?.find(s => s.id === entry.subjectId);
-                        if (!subject) return null;
-                        return (
-                          <div key={entry.id} className="flex items-center justify-between p-3.5 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 group active:bg-white/10 transition-all">
-                            <div className="flex items-center gap-3">
-                              <div className="w-1.5 h-8 bg-blue-600 rounded-full" />
-                              <span className="font-bold text-white text-sm">{subject.name}</span>
-                            </div>
-                            <button onClick={() => handleDeleteTimetableEntry(entry.id)} className="p-1.5 text-gray-600 hover:text-red-400">
-                              <XCircle size={16} />
-                            </button>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Add Subject Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
-          <div className="bg-[#1a1a1a] p-6 rounded-t-[2.5rem] sm:rounded-3xl w-full max-w-md shadow-2xl border-t sm:border border-white/10 animate-in slide-in-from-bottom duration-300">
-            <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6 sm:hidden" onClick={() => setIsModalOpen(false)} />
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">New Subject</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white">
-                <XCircle size={24} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleAddSubject} className="space-y-4">
-              {semesters && semesters.length > 0 && (
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="bg-[#121212] p-8 rounded-t-[3rem] sm:rounded-[3rem] w-full max-w-md shadow-2xl border-t border-white/10 relative z-10 overflow-y-auto max-h-[90vh]"
+            >
+              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8 sm:hidden" onClick={() => setIsModalOpen(false)} />
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight">New Subject</h2>
+                <button onClick={() => setIsModalOpen(false)} className="p-2 text-gray-500 hover:text-white transition-colors">
+                  <XCircle size={28} />
+                </button>
+              </div>
+              
+              <form onSubmit={handleAddSubject} className="space-y-6">
+                {semesters && semesters.length > 0 && (
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Select Semester</label>
+                    <select 
+                      required
+                      value={formData.semesterId}
+                      onChange={(e) => setFormData({...formData, semesterId: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none font-bold shadow-inner"
+                    >
+                      {semesters.map(sem => (
+                        <option key={sem.id} value={sem.id}>{sem.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div>
-                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Semester</label>
-                  <select 
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Subject Name</label>
+                  <input 
+                    type="text" 
                     required
-                    value={formData.semesterId}
-                    onChange={(e) => setFormData({...formData, semesterId: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none font-bold"
-                  >
-                    {semesters.map(sem => (
-                      <option key={sem.id} value={sem.id}>{sem.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Subject Name</label>
-                <input 
-                  type="text" 
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold"
-                  placeholder="e.g. Computer Science"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Credits</label>
-                  <input 
-                    type="number" 
-                    required min="0" max="10"
-                    value={formData.credits}
-                    onChange={(e) => setFormData({...formData, credits: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold text-center"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none font-black placeholder:text-gray-800 shadow-inner"
+                    placeholder="e.g. DATA STRUCTURES"
                   />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Threshold (%)</label>
-                  <input 
-                    type="number" 
-                    required min="1" max="100"
-                    value={formData.threshold}
-                    onChange={(e) => setFormData({...formData, threshold: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold text-center"
-                  />
-                </div>
-              </div>
 
-              <div className="bg-blue-500/5 p-4 rounded-3xl border border-blue-500/10 space-y-4">
-                <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Mid-term Entry (Optional)</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-tighter mb-1.5 ml-1">Attended Classes</label>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Credits</label>
                     <input 
-                      type="number" min="0"
-                      value={formData.initialAttended}
-                      onChange={e => setFormData({ ...formData, initialAttended: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm font-bold outline-none text-center"
+                      type="number" 
+                      required min="0" max="10"
+                      value={formData.credits}
+                      onChange={(e) => setFormData({...formData, credits: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none font-black text-center shadow-inner"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-tighter mb-1.5 ml-1">Total Classes</label>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Goal (%)</label>
                     <input 
-                      type="number" min="0"
-                      value={formData.initialTotal}
-                      onChange={e => setFormData({ ...formData, initialTotal: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm font-bold outline-none text-center"
+                      type="number" 
+                      required min="1" max="100"
+                      value={formData.threshold}
+                      onChange={(e) => setFormData({...formData, threshold: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none font-black text-center shadow-inner"
                     />
                   </div>
                 </div>
-                <p className="text-[9px] text-gray-600 font-medium px-1">Use this if you are starting to track after the semester has already begun.</p>
-              </div>
 
-              <button 
-                type="submit" 
-                className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-[2rem] transition-all font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 active:scale-[0.98] mt-2"
-              >
-                CREATE SUBJECT
-              </button>
-            </form>
+                <div className="bg-blue-500/5 p-6 rounded-[2rem] border border-blue-500/10 space-y-4">
+                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                    <Clock size={12} /> Mid-term Start?
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] font-black text-gray-600 uppercase tracking-tighter mb-1.5 ml-1">Attended</label>
+                      <input 
+                        type="number" min="0"
+                        value={formData.initialAttended}
+                        onChange={e => setFormData({ ...formData, initialAttended: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm font-black outline-none text-center"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-black text-gray-600 uppercase tracking-tighter mb-1.5 ml-1">Total</label>
+                      <input 
+                        type="number" min="0"
+                        value={formData.initialTotal}
+                        onChange={e => setFormData({ ...formData, initialTotal: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm font-black outline-none text-center"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="w-full py-5 bg-blue-600 text-white rounded-[2rem] transition-all font-black uppercase tracking-[0.2em] shadow-2xl shadow-blue-600/40 active:scale-[0.98] mt-4"
+                >
+                  Create Subject
+                </button>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
