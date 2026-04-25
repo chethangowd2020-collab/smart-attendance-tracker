@@ -6,7 +6,7 @@ import { pushToCloud, pullFromCloud } from '../services/syncService';
 import { 
   Settings as SettingsIcon, Download, Upload, Trash2, Moon, Sun, 
   User, BookOpen, GraduationCap, Bell, Palette, Database, Shield,
-  ChevronRight, Save, LogOut, Calendar as CalendarIcon, Cloud, RefreshCw, CheckCircle2, Mail
+  ChevronRight, Save, LogOut, Calendar as CalendarIcon, Cloud, RefreshCw, CheckCircle2, Mail, Edit2
 } from 'lucide-react';
 import { exportDB, importInto } from 'dexie-export-import';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -184,7 +184,10 @@ export default function Settings() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Full Name</label>
+              <div className="flex items-center gap-2 mb-1.5 ml-1">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Full Name</label>
+                <Edit2 size={10} className="text-purple-400/50" />
+              </div>
               <input 
                 type="text" 
                 value={localProfile.name}
