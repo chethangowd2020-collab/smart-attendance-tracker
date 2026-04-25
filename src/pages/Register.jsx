@@ -52,9 +52,9 @@ export default function Register() {
                 <input 
                   type="text" required
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold"
-                  placeholder="John Doe"
+                  onChange={(e) => setName(e.target.value.toUpperCase())}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold uppercase"
+                  placeholder="JOHN DOE"
                 />
               </div>
             </div>
