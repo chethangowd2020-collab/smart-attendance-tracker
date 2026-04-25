@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, GraduationCap, ArrowRight } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -20,44 +20,57 @@ export default function Login() {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="min-h-[80vh] flex items-center justify-center px-4"
-    >
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-black text-white tracking-tighter mb-2 uppercase">Welcome Back</h1>
-          <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.3em]">Sign in to sync your data</p>
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6 relative overflow-hidden">
+      {/* Background Orbs */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full animate-pulse delay-700" />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md z-10"
+      >
+        <div className="flex flex-col items-center mb-12">
+          <motion.div 
+            initial={{ y: -20 }}
+            animate={{ y: 0 }}
+            className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-600/40 mb-6"
+          >
+            <GraduationCap className="text-white" size={32} />
+          </motion.div>
+          <h1 className="text-5xl font-black text-white tracking-tighter mb-2 text-center">TRACKIFY</h1>
+          <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.4em] text-center">Your Academic Identity</p>
         </div>
 
-        <div className="glass-card p-8 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-3xl -mr-16 -mt-16" />
+        <div className="glass-card p-10 rounded-[3.5rem] border border-white/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[3.5rem] pointer-events-none" />
           
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            <div>
-              <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+          <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1">Email Address</label>
+              <div className="relative group">
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" size={18} />
                 <input 
                   type="email" required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold"
-                  placeholder="name@example.com"
+                  className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-5 pl-14 text-white focus:ring-2 focus:ring-blue-500/50 focus:bg-white/[0.05] outline-none font-bold transition-all placeholder:text-gray-700"
+                  placeholder="name@university.com"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1">Password</label>
+              <div className="relative group">
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" size={18} />
                 <input 
                   type="password" required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold"
+                  className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-5 pl-14 text-white focus:ring-2 focus:ring-blue-500/50 focus:bg-white/[0.05] outline-none font-bold transition-all placeholder:text-gray-700"
                   placeholder="••••••••"
                 />
               </div>
@@ -66,22 +79,23 @@ export default function Login() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full py-5 bg-blue-600 text-white rounded-[2rem] transition-all font-black uppercase tracking-[0.2em] shadow-2xl shadow-blue-600/40 active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full py-6 bg-blue-600 text-white rounded-[2.5rem] transition-all font-black uppercase tracking-[0.25em] shadow-2xl shadow-blue-600/30 hover:bg-blue-500 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 relative overflow-hidden group"
             >
-              {loading ? "Signing in..." : <><LogIn size={18} /> Sign In</>}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
+              {loading ? "Authenticating..." : <><LogIn size={20} /> Sign In</>}
             </button>
           </form>
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-gray-500 font-bold text-xs">
-            Don't have an account? 
-            <Link to="/register" className="text-blue-400 ml-2 hover:underline inline-flex items-center gap-1">
-              Create one <UserPlus size={14} />
+        <div className="mt-12 text-center">
+          <p className="text-gray-500 font-bold text-sm tracking-tight">
+            New to Trackify? 
+            <Link to="/register" className="text-white ml-2 hover:text-blue-400 transition-colors inline-flex items-center gap-2 group">
+              Create an account <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </p>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
