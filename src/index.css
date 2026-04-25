@@ -24,7 +24,7 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: radial-gradient(circle at 10% 20%, rgb(17, 24, 39) 0%, rgb(31, 41, 55) 90%);
