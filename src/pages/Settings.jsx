@@ -6,14 +6,15 @@ import { exportDB, importInto } from 'dexie-export-import';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
-  const settings = useLiveQuery(() => db.settings.get(1), []);
+  const liveSettings = useLiveQuery(() => db.settings.get(1), []);
   const [importing, setImporting] = useState(false);
+
+  // Fallback settings to prevent blank screen
+  const settings = liveSettings || { defaultThreshold: 75 };
 
   const handleCSVExport = async () => {
     try {
       const subjects = await db.subjects.toArray();
-      const attendance = await db.attendance_records.toArray();
-      
       let csvContent = "data:text/csv;charset=utf-8,";
       csvContent += "Subject,Credits,Attended,Total,Percentage,Threshold\n";
       
@@ -45,7 +46,6 @@ export default function Settings() {
       URL.revokeObjectURL(url);
       toast.success("Backup downloaded!");
     } catch (error) {
-      console.error('Export failed:', error);
       toast.error('Export failed');
     }
   };
@@ -64,7 +64,6 @@ export default function Settings() {
         toast.success('Data imported successfully!', { id: loadingToast });
         setTimeout(() => window.location.reload(), 1500);
       } catch (error) {
-        console.error('Import failed:', error);
         toast.error('Import failed.', { id: loadingToast });
       } finally {
         setImporting(false);
@@ -75,14 +74,10 @@ export default function Settings() {
 
   const handleClearData = async () => {
     if (confirm('Are you absolutely sure you want to delete ALL data? This cannot be undone.')) {
-      if (confirm('FINAL WARNING: Delete all data?')) {
-        await db.delete();
-        window.location.reload();
-      }
+      await db.delete();
+      window.location.reload();
     }
   };
-
-  if (!settings) return <div className="text-gray-400">Loading settings...</div>;
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto pb-20">
@@ -107,7 +102,8 @@ export default function Settings() {
               className="bg-white/5 border border-white/10 rounded-xl p-2.5 text-white w-16 text-center text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
               value={settings.defaultThreshold}
               onChange={async (e) => {
-                await db.settings.update(1, { defaultThreshold: Number(e.target.value) });
+                const val = Number(e.target.value);
+                await db.settings.put({ ...settings, id: 1, defaultThreshold: val });
                 toast.success("Updated", { id: 'threshold' });
               }}
             />
@@ -175,3 +171,4 @@ export default function Settings() {
     </div>
   );
 }
+
