@@ -240,6 +240,49 @@ export default function Subjects() {
                               </div>
                             </div>
 
+                            <div className="bg-blue-500/5 p-5 rounded-[2rem] border border-blue-500/10 space-y-4">
+                              <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                                <Clock size={12} /> Edit Mid-term Start
+                              </p>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-[9px] font-black text-gray-600 uppercase tracking-tighter mb-1.5 ml-1">Initial Attended</label>
+                                  <input 
+                                    type="number" min="0"
+                                    value={sub.initialAttendedClasses || 0}
+                                    onChange={async (e) => {
+                                      const newVal = Number(e.target.value) || 0;
+                                      const currentMarkedAttended = sub.attendedClasses - (sub.initialAttendedClasses || 0);
+                                      const currentMarkedTotal = sub.totalClasses - (sub.initialTotalClasses || 0);
+                                      
+                                      await db.subjects.update(sub.id, {
+                                        initialAttendedClasses: newVal,
+                                        attendedClasses: newVal + currentMarkedAttended
+                                      });
+                                    }}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm font-black outline-none text-center"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[9px] font-black text-gray-600 uppercase tracking-tighter mb-1.5 ml-1">Initial Total</label>
+                                  <input 
+                                    type="number" min="0"
+                                    value={sub.initialTotalClasses || 0}
+                                    onChange={async (e) => {
+                                      const newVal = Number(e.target.value) || 0;
+                                      const currentMarkedTotal = sub.totalClasses - (sub.initialTotalClasses || 0);
+                                      
+                                      await db.subjects.update(sub.id, {
+                                        initialTotalClasses: newVal,
+                                        totalClasses: newVal + currentMarkedTotal
+                                      });
+                                    }}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm font-black outline-none text-center"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
                             <div className={clsx(
                               "p-4 rounded-3xl border flex items-center gap-4",
                               isSafe ? "bg-blue-600/10 border-blue-600/20 text-blue-400" : "bg-red-600/10 border-red-600/20 text-red-400"
