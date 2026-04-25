@@ -30,8 +30,9 @@ export default function Academics() {
   const activeSemester = semesters?.find(s => s.id === activeSemesterId);
   const activeSubjects = allSubjects?.filter(s => s.semesterId === activeSemesterId) || [];
   
-  const sgpa = activeSemester && allSubjects && allMarks && settings ? calculateSGPA(activeSubjects, allMarks, settings.gradingScale) : 0;
-  const cgpa = semesters && allSubjects && allMarks && settings ? calculateCGPA(semesters, allSubjects, allMarks, settings.gradingScale) : 0;
+  const gradingScale = settings?.gradingScale || [];
+  const sgpa = activeSemester && allSubjects && allMarks && settings ? calculateSGPA(activeSubjects, allMarks, gradingScale) : 0;
+  const cgpa = semesters && allSubjects && allMarks && settings ? calculateCGPA(semesters, allSubjects, allMarks, gradingScale) : 0;
 
   const handleAddSemester = async (e) => {
     e.preventDefault();

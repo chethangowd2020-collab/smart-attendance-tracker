@@ -46,18 +46,16 @@ export default function Settings() {
   const [importing, setImporting] = useState(false);
   const [localProfile, setLocalProfile] = useState({ name: '', course: '', semester: '' });
 
-  // Use a fallback to prevent blank screen
-  const settings = liveSettings || { 
-    defaultThreshold: 75, 
-    profile: { name: '', course: '', semester: '' },
-    notifications: { lowAttendanceAlert: true, dailyReminder: true }
-  };
+  const settings = liveSettings || {};
+  const notifications = settings.notifications || { lowAttendanceAlert: true, dailyReminder: true };
+  const profile = settings.profile || { name: '', course: '', semester: '' };
+  const defaultThreshold = settings.defaultThreshold ?? 75;
 
   useEffect(() => {
-    if (liveSettings?.profile) {
-      setLocalProfile(liveSettings.profile);
+    if (settings.profile) {
+      setLocalProfile(settings.profile);
     }
-  }, [liveSettings]);
+  }, [settings.profile]);
 
   const updateSettings = async (updates) => {
     try {
@@ -201,7 +199,7 @@ export default function Settings() {
               <input 
                 type="number" 
                 min="1" max="100"
-                value={settings.defaultThreshold}
+                value={defaultThreshold}
                 onChange={(e) => updateSettings({ defaultThreshold: Number(e.target.value) })}
                 className="bg-white/5 border border-white/10 rounded-xl p-2.5 text-white w-16 text-center text-sm font-black focus:ring-2 focus:ring-blue-500 outline-none"
               />
@@ -212,7 +210,7 @@ export default function Settings() {
           <div className="space-y-3">
             <input 
               type="range" min="1" max="100" 
-              value={settings.defaultThreshold}
+              value={defaultThreshold}
               onChange={(e) => updateSettings({ defaultThreshold: Number(e.target.value) })}
               className="w-full h-1.5 bg-white/5 rounded-full appearance-none cursor-pointer accent-blue-600"
             />
@@ -237,8 +235,8 @@ export default function Settings() {
               </div>
             </div>
             <Toggle 
-              enabled={settings.notifications.lowAttendanceAlert} 
-              onChange={(val) => updateSettings({ notifications: { ...settings.notifications, lowAttendanceAlert: val } })} 
+              enabled={notifications.lowAttendanceAlert} 
+              onChange={(val) => updateSettings({ notifications: { ...notifications, lowAttendanceAlert: val } })} 
             />
           </div>
 
@@ -251,8 +249,8 @@ export default function Settings() {
               </div>
             </div>
             <Toggle 
-              enabled={settings.notifications.dailyReminder} 
-              onChange={(val) => updateSettings({ notifications: { ...settings.notifications, dailyReminder: val } })} 
+              enabled={notifications.dailyReminder} 
+              onChange={(val) => updateSettings({ notifications: { ...notifications, dailyReminder: val } })} 
             />
           </div>
         </div>
