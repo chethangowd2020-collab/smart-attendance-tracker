@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { Settings as SettingsIcon, Download, Upload, Trash2, Moon, Sun } from 'lucide-react';
 import { exportDB, importInto } from 'dexie-export-import';
+import toast from 'react-hot-toast';
 
 export default function Settings() {
   const settings = useLiveQuery(() => db.settings.get(1), []);
@@ -14,12 +15,13 @@ export default function Settings() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `smart-attendance-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `AcademicsTracker-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      toast.success("Backup downloaded!");
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Export failed. Check console for details.');
+      toast.error('Export failed. Check console for details.');
     }
   };
 
@@ -29,15 +31,16 @@ export default function Settings() {
     
     if (confirm('Importing will overwrite your current data. Are you sure?')) {
       setImporting(true);
+      const loadingToast = toast.loading('Importing data...');
       try {
         await db.delete(); // clear current db
         await db.open(); // reopen
         await importInto(db, file, { overwriteValues: true });
-        alert('Data imported successfully! Reloading...');
-        window.location.reload();
+        toast.success('Data imported successfully!', { id: loadingToast });
+        setTimeout(() => window.location.reload(), 1500);
       } catch (error) {
         console.error('Import failed:', error);
-        alert('Import failed. Check console for details.');
+        toast.error('Import failed.', { id: loadingToast });
       } finally {
         setImporting(false);
       }
@@ -66,7 +69,7 @@ export default function Settings() {
       </header>
 
       {/* Preferences */}
-      <section className="bg-gray-800 p-5 rounded-2xl border border-gray-700 space-y-6">
+      <section className="glass-card p-5 rounded-2xl space-y-6">
         <h2 className="text-lg font-semibold text-white">Preferences</h2>
         
         <div className="flex items-center justify-between">
@@ -74,27 +77,33 @@ export default function Settings() {
             <h3 className="font-medium text-white">Default Attendance Threshold</h3>
             <p className="text-sm text-gray-400">Target percentage for new subjects</p>
           </div>
-          <input 
-            type="number" 
-            min="1" max="100"
-            className="bg-gray-900 border border-gray-600 rounded-lg p-2 text-white w-20 text-center"
-            value={settings.defaultThreshold}
-            onChange={async (e) => await db.settings.update(1, { defaultThreshold: Number(e.target.value) })}
-          />
+          <div className="flex items-center gap-2">
+            <input 
+              type="number" 
+              min="1" max="100"
+              className="bg-gray-900/50 border border-gray-600 rounded-lg p-2 text-white w-20 text-center focus:ring-2 focus:ring-blue-500 outline-none"
+              value={settings.defaultThreshold}
+              onChange={async (e) => {
+                await db.settings.update(1, { defaultThreshold: Number(e.target.value) });
+                toast.success("Threshold updated", { id: 'threshold' });
+              }}
+            />
+            <span className="text-gray-400 font-medium">%</span>
+          </div>
         </div>
       </section>
 
       {/* Data Management */}
-      <section className="bg-gray-800 p-5 rounded-2xl border border-gray-700 space-y-6">
+      <section className="glass-card p-5 rounded-2xl space-y-6">
         <h2 className="text-lg font-semibold text-white">Data Management</h2>
         
         <div className="space-y-4">
           <button 
             onClick={handleExport}
-            className="w-full flex items-center justify-between p-4 bg-gray-900 border border-gray-700 rounded-xl hover:bg-gray-700 transition-colors"
+            className="w-full flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400"><Download size={20} /></div>
+              <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400 border border-blue-500/30"><Download size={20} /></div>
               <div className="text-left">
                 <p className="font-medium text-white">Backup Data</p>
                 <p className="text-xs text-gray-400">Export all your data as a JSON file</p>
@@ -102,9 +111,9 @@ export default function Settings() {
             </div>
           </button>
 
-          <label className="w-full flex items-center justify-between p-4 bg-gray-900 border border-gray-700 rounded-xl hover:bg-gray-700 transition-colors cursor-pointer">
+          <label className="w-full flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer">
             <div className="flex items-center gap-3">
-              <div className="bg-green-500/20 p-2 rounded-lg text-green-400"><Upload size={20} /></div>
+              <div className="bg-green-500/20 p-2 rounded-lg text-green-400 border border-green-500/30"><Upload size={20} /></div>
               <div className="text-left">
                 <p className="font-medium text-white">Restore Data</p>
                 <p className="text-xs text-gray-400">{importing ? 'Importing...' : 'Import data from a backup JSON file'}</p>
@@ -118,7 +127,7 @@ export default function Settings() {
             className="w-full flex items-center justify-between p-4 bg-red-900/20 border border-red-900/50 rounded-xl hover:bg-red-900/40 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="bg-red-500/20 p-2 rounded-lg text-red-400"><Trash2 size={20} /></div>
+              <div className="bg-red-500/20 p-2 rounded-lg text-red-400 border border-red-500/30"><Trash2 size={20} /></div>
               <div className="text-left">
                 <p className="font-medium text-red-400">Clear All Data</p>
                 <p className="text-xs text-red-400/70">Permanently delete all subjects and marks</p>

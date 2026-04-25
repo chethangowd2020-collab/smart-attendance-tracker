@@ -43,7 +43,7 @@ export default function Analytics() {
       </header>
 
       {/* Attendance Comparison Chart */}
-      <section className="bg-gray-800 p-5 rounded-2xl border border-gray-700">
+      <section className="glass-card p-5 rounded-2xl">
         <h2 className="text-lg font-semibold text-white mb-4">Subject Attendance</h2>
         {attendanceData.length === 0 ? (
           <p className="text-gray-500 text-sm italic">No subjects added yet.</p>
@@ -56,7 +56,7 @@ export default function Analytics() {
                 <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
                 <Tooltip 
                   cursor={{ fill: '#374151', opacity: 0.4 }}
-                  contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }}
+                  contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.9)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff' }}
                   formatter={(value) => [`${value}%`, 'Attendance']}
                   labelFormatter={(label, payload) => payload?.[0]?.payload?.fullName || label}
                 />
@@ -69,7 +69,7 @@ export default function Analytics() {
       </section>
 
       {/* SGPA Trend Chart */}
-      <section className="bg-gray-800 p-5 rounded-2xl border border-gray-700">
+      <section className="glass-card p-5 rounded-2xl">
         <h2 className="text-lg font-semibold text-white mb-4">SGPA Progression</h2>
         {sgpaTrendData.length === 0 ? (
           <p className="text-gray-500 text-sm italic">No semester data available.</p>
@@ -81,7 +81,7 @@ export default function Analytics() {
                 <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} domain={[0, 10]} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }}
+                  contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.9)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff' }}
                 />
                 <Line type="monotone" dataKey="sgpa" stroke="#10b981" strokeWidth={3} dot={{ r: 5, fill: '#10b981', strokeWidth: 2, stroke: '#1f2937' }} activeDot={{ r: 7 }} />
               </LineChart>

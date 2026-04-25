@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Subjects from './pages/Subjects';
@@ -9,18 +10,27 @@ import Settings from './pages/Settings';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="subjects" element={<Subjects />} />
-          <Route path="calendar" element={<CalendarView />} />
-          <Route path="academics" element={<Academics />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
-    </Router>
+    <>
+      <Toaster position="top-center" toastOptions={{
+        style: {
+          background: '#1f2937',
+          color: '#fff',
+          border: '1px solid #374151',
+        },
+      }} />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="subjects" element={<Subjects />} />
+            <Route path="calendar" element={<CalendarView />} />
+            <Route path="academics" element={<Academics />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </Router>
+    </>
   );
 }
 

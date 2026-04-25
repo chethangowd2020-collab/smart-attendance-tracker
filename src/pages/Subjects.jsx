@@ -4,56 +4,94 @@ import { db } from '../db/db';
 import { Plus, Trash2, Edit, Calendar, XCircle } from 'lucide-react';
 import CircularProgress from '../components/ui/CircularProgress';
 import clsx from 'clsx';
+import toast from 'react-hot-toast';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function Subjects() {
   const [activeTab, setActiveTab] = useState('subjects'); // 'subjects' | 'timetable'
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', credits: 3, threshold: 75 });
+  const [formData, setFormData] = useState({ name: '', credits: 3, threshold: 75, semesterId: '' });
   
   const subjects = useLiveQuery(() => db.subjects.toArray(), []);
   const settings = useLiveQuery(() => db.settings.get(1), []);
   const semesters = useLiveQuery(() => db.semesters.toArray(), []);
   const timetable = useLiveQuery(() => db.timetable.toArray(), []);
 
+  // Set default semesterId when modal opens if not set
+  const handleOpenModal = () => {
+    if (semesters && semesters.length > 0 && !formData.semesterId) {
+      setFormData(prev => ({ ...prev, semesterId: semesters[0].id }));
+    }
+    setIsModalOpen(true);
+  };
+
   const handleAddSubject = async (e) => {
     e.preventDefault();
     if (!semesters || semesters.length === 0) {
-      alert("No active semester found. Please create one in Academics first.");
+      toast.error("No active semester found. Please create one in Academics first.");
+      return;
+    }
+
+    const selectedSemesterId = formData.semesterId ? Number(formData.semesterId) : semesters[0].id;
+
+    // Validation: prevent duplicate subject names in the same semester
+    const exists = subjects.find(s => s.name.toLowerCase() === formData.name.toLowerCase() && s.semesterId === selectedSemesterId);
+    if (exists) {
+      toast.error("Subject already exists in this semester!");
       return;
     }
     
-    await db.subjects.add({
-      semesterId: semesters[0].id,
-      name: formData.name,
-      credits: Number(formData.credits),
-      totalClasses: 0,
-      attendedClasses: 0,
-      threshold: Number(formData.threshold),
-      gradingScaleId: 1 // Default
-    });
-    
-    setFormData({ name: '', credits: 3, threshold: settings?.defaultThreshold || 75 });
-    setIsModalOpen(false);
+    try {
+      await db.subjects.add({
+        semesterId: selectedSemesterId,
+        name: formData.name,
+        credits: Number(formData.credits),
+        totalClasses: 0,
+        attendedClasses: 0,
+        threshold: Number(formData.threshold),
+        gradingScaleId: 1 // Default
+      });
+      
+      toast.success("Subject added successfully!");
+      setFormData({ name: '', credits: 3, threshold: settings?.defaultThreshold || 75, semesterId: selectedSemesterId });
+      setIsModalOpen(false);
+    } catch (e) {
+      toast.error("Failed to add subject");
+    }
   };
 
   const handleDeleteSubject = async (id) => {
     if (confirm("Are you sure you want to delete this subject? All related attendance and marks will be lost.")) {
-      await db.subjects.delete(id);
-      await db.attendance_records.where('subjectId').equals(id).delete();
-      await db.marks.where('subjectId').equals(id).delete();
-      await db.timetable.where('subjectId').equals(id).delete();
+      try {
+        await db.subjects.delete(id);
+        await db.attendance_records.where('subjectId').equals(id).delete();
+        await db.marks.where('subjectId').equals(id).delete();
+        await db.timetable.where('subjectId').equals(id).delete();
+        toast.success("Subject deleted");
+      } catch (e) {
+        toast.error("Failed to delete subject");
+      }
     }
   };
 
   const handleAddTimetableEntry = async (dayOfWeek, subjectId) => {
     if (!subjectId) return;
-    await db.timetable.add({ dayOfWeek, subjectId: Number(subjectId) });
+    try {
+      await db.timetable.add({ dayOfWeek, subjectId: Number(subjectId) });
+      toast.success("Added to timetable");
+    } catch(e) {
+      toast.error("Failed to update timetable");
+    }
   };
 
   const handleDeleteTimetableEntry = async (id) => {
-    await db.timetable.delete(id);
+    try {
+      await db.timetable.delete(id);
+      toast.success("Removed from timetable");
+    } catch(e) {
+      toast.error("Failed to remove");
+    }
   };
 
   return (
@@ -62,8 +100,8 @@ export default function Subjects() {
         <h1 className="text-2xl font-bold text-white">Manage Classes</h1>
         {activeTab === 'subjects' && (
           <button 
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            onClick={handleOpenModal}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 text-white rounded-lg transition-colors font-medium"
           >
             <Plus size={18} />
             <span className="hidden sm:inline">Add Subject</span>
@@ -72,16 +110,16 @@ export default function Subjects() {
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-gray-800 rounded-lg p-1">
+      <div className="flex glass-card rounded-lg p-1">
         <button
           onClick={() => setActiveTab('subjects')}
-          className={clsx("flex-1 py-2 text-sm font-medium rounded-md transition-colors", activeTab === 'subjects' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200')}
+          className={clsx("flex-1 py-2 text-sm font-medium rounded-md transition-all", activeTab === 'subjects' ? 'bg-white/10 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200')}
         >
           Subjects
         </button>
         <button
           onClick={() => setActiveTab('timetable')}
-          className={clsx("flex-1 py-2 text-sm font-medium rounded-md transition-colors", activeTab === 'timetable' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200')}
+          className={clsx("flex-1 py-2 text-sm font-medium rounded-md transition-all", activeTab === 'timetable' ? 'bg-white/10 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200')}
         >
           Timetable
         </button>
@@ -90,13 +128,13 @@ export default function Subjects() {
       {activeTab === 'subjects' && (
         <>
           {!subjects || subjects.length === 0 ? (
-            <div className="text-center py-12 bg-gray-800 rounded-xl border border-gray-700">
-              <p className="text-gray-400">No subjects added yet.</p>
+            <div className="text-center py-12 glass-card rounded-xl">
+              <p className="text-gray-300">No subjects added yet.</p>
               <button 
-                onClick={() => setIsModalOpen(true)}
-                className="mt-4 text-blue-500 hover:underline"
+                onClick={handleOpenModal}
+                className="mt-4 text-blue-400 font-medium hover:text-blue-300 transition-colors"
               >
-                Add your first subject
+                + Add your first subject
               </button>
             </div>
           ) : (
@@ -107,14 +145,14 @@ export default function Subjects() {
                 const colorClass = percentage === 0 && sub.totalClasses === 0 ? 'text-blue-500' : (isSafe ? 'text-green-500' : 'text-red-500');
                 
                 return (
-                  <div key={sub.id} className="bg-gray-800 p-5 rounded-xl border border-gray-700 flex flex-col justify-between">
+                  <div key={sub.id} className="glass-card p-5 rounded-xl flex flex-col justify-between">
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className="text-lg font-semibold text-white">{sub.name}</h3>
                         <p className="text-sm text-gray-400">{sub.credits} Credits • Threshold: {sub.threshold}%</p>
                       </div>
                       <div className="flex items-center gap-2 text-gray-400">
-                        <button onClick={() => handleDeleteSubject(sub.id)} className="hover:text-red-500 transition-colors">
+                        <button onClick={() => handleDeleteSubject(sub.id)} className="hover:text-red-400 transition-colors bg-white/5 p-2 rounded-lg hover:bg-red-500/10">
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -134,7 +172,7 @@ export default function Subjects() {
 
                     {/* Smart Prediction System */}
                     {sub.totalClasses > 0 && (
-                      <div className="mt-4 pt-3 border-t border-gray-700/50 space-y-1">
+                      <div className="mt-4 pt-3 border-t border-white/10 space-y-1">
                         <p className="text-xs text-gray-400">
                           <span className="text-red-400">If miss 2:</span> {(((sub.attendedClasses) / (sub.totalClasses + 2)) * 100).toFixed(1)}%
                         </p>
@@ -162,15 +200,15 @@ export default function Subjects() {
       )}
 
       {activeTab === 'timetable' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {DAYS.map((day, index) => {
             const dayEntries = timetable?.filter(t => t.dayOfWeek === index) || [];
             return (
-              <div key={day} className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-                <div className="bg-gray-700/50 px-4 py-3 border-b border-gray-700 flex justify-between items-center">
+              <div key={day} className="glass-card rounded-xl overflow-hidden">
+                <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex justify-between items-center">
                   <h3 className="font-semibold text-white">{day}</h3>
                   <select 
-                    className="bg-gray-900 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5"
+                    className="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5 outline-none"
                     onChange={(e) => {
                       handleAddTimetableEntry(index, e.target.value);
                       e.target.value = '';
@@ -185,15 +223,15 @@ export default function Subjects() {
                 </div>
                 <div className="p-4 flex flex-wrap gap-2">
                   {dayEntries.length === 0 ? (
-                    <p className="text-sm text-gray-500 italic">No classes scheduled.</p>
+                    <p className="text-sm text-gray-400 italic">No classes scheduled.</p>
                   ) : (
                     dayEntries.map(entry => {
                       const subject = subjects?.find(s => s.id === entry.subjectId);
                       if (!subject) return null;
                       return (
-                        <div key={entry.id} className="flex items-center gap-2 bg-blue-900/30 border border-blue-800/50 text-blue-200 px-3 py-1.5 rounded-lg text-sm">
+                        <div key={entry.id} className="flex items-center gap-2 bg-blue-500/20 border border-blue-500/30 text-blue-200 px-3 py-1.5 rounded-lg text-sm shadow-sm backdrop-blur-sm">
                           {subject.name}
-                          <button onClick={() => handleDeleteTimetableEntry(entry.id)} className="text-blue-400 hover:text-red-400 ml-1">
+                          <button onClick={() => handleDeleteTimetableEntry(entry.id)} className="text-blue-400 hover:text-red-400 ml-1 transition-colors">
                             <XCircle size={14} />
                           </button>
                         </div>
@@ -209,10 +247,26 @@ export default function Subjects() {
 
       {/* Add Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 p-6 rounded-xl w-full max-w-md border border-gray-700 shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="glass-card p-6 rounded-2xl w-full max-w-md shadow-2xl border border-white/10">
             <h2 className="text-xl font-bold text-white mb-4">Add Subject</h2>
             <form onSubmit={handleAddSubject} className="space-y-4">
+              {semesters && semesters.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Semester</label>
+                  <select 
+                    required
+                    value={formData.semesterId}
+                    onChange={(e) => setFormData({...formData, semesterId: e.target.value})}
+                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  >
+                    {semesters.map(sem => (
+                      <option key={sem.id} value={sem.id}>{sem.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Subject Name</label>
                 <input 
@@ -250,13 +304,13 @@ export default function Subjects() {
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-medium shadow-lg shadow-blue-500/20"
                 >
                   Save Subject
                 </button>

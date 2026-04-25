@@ -27,10 +27,22 @@ body {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-image: radial-gradient(circle at 10% 20%, rgb(17, 24, 39) 0%, rgb(31, 41, 55) 90%);
+  background-attachment: fixed;
+  color: #f8fafc;
 }
 
-/* Base styles to force dark mode look everywhere if no explicit classes are used */
 html {
-  background-color: #0f172a;
+  background-color: #111827;
   color: #f8fafc;
+}
+
+/* Glassmorphism utility */
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
+  }
+  .glass-card {
+    @apply bg-gray-900/40 backdrop-blur-lg border border-gray-700/50 shadow-2xl;
+  }
 }
