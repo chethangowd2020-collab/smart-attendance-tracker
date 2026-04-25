@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #2563eb;
+  --color-secondary: #10b981;
+  --color-secondary-dark: #059669;
+  --color-danger: #ef4444;
+  --color-danger-dark: #dc2626;
+  --color-background-dark: #0f172a;
+  --color-surface-dark: #1e293b;
+  --color-surface-hover-dark: #334155;
+  --color-text-dark: #f8fafc;
+  --color-text-muted-dark: #94a3b8;
+}
+
+@layer base {
+  :root {
+    background-color: var(--color-background-dark);
+    color: var(--color-text-dark);
+    color-scheme: dark;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base styles to force dark mode look everywhere if no explicit classes are used */
+html {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
