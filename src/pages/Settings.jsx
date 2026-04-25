@@ -34,6 +34,54 @@ export default function Settings() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const blob = await exportDB(db);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AcademicsTracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Backup downloaded!");
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Export failed');
+    }
+  };
+
+  const handleImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (confirm('Importing will overwrite your current data. Are you sure?')) {
+      setImporting(true);
+      const loadingToast = toast.loading('Importing data...');
+      try {
+        await db.delete(); 
+        await db.open(); 
+        await importInto(db, file, { overwriteValues: true });
+        toast.success('Data imported successfully!', { id: loadingToast });
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (error) {
+        console.error('Import failed:', error);
+        toast.error('Import failed.', { id: loadingToast });
+      } finally {
+        setImporting(false);
+      }
+    }
+    e.target.value = null; 
+  };
+
+  const handleClearData = async () => {
+    if (confirm('Are you absolutely sure you want to delete ALL data? This cannot be undone.')) {
+      if (confirm('FINAL WARNING: Delete all data?')) {
+        await db.delete();
+        window.location.reload();
+      }
+    }
+  };
+
   if (!settings) return <div className="text-gray-400">Loading settings...</div>;
 
   return (
