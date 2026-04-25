@@ -45,12 +45,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password) => {
+  const register = async (email, password, profileData) => {
     try {
       const res = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, profile: profileData })
       });
       const data = await res.json();
       
@@ -60,6 +60,19 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Initialize local settings with profile info
+      await db.settings.put({
+        id: 1,
+        profile: {
+          name: profileData.name || '',
+          usn: profileData.usn || '',
+          course: '',
+          semester: ''
+        },
+        notifications: { lowAttendanceAlert: true, dailyReminder: true },
+        defaultThreshold: 75
+      });
       
       toast.success('Account created!');
       return true;

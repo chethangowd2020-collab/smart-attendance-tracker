@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, UserPlus, LogIn } from 'lucide-react';
+import { Mail, Lock, UserPlus, LogIn, User, Fingerprint } from 'lucide-react';
 
 export default function Register() {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [usn, setUsn] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,8 +19,12 @@ export default function Register() {
     if (password !== confirmPassword) {
       return alert("Passwords don't match");
     }
+    if (usn.length !== 10) {
+      return alert("USN must be exactly 10 characters");
+    }
+    
     setLoading(true);
-    const success = await register(email, password);
+    const success = await register(email, password, { name, usn });
     setLoading(false);
     if (success) navigate('/');
   };
@@ -39,6 +45,34 @@ export default function Register() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-3xl -mr-16 -mt-16" />
           
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+            <div>
+              <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">Full Name</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+                <input 
+                  type="text" required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold"
+                  placeholder="John Doe"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">10-Digit USN</label>
+              <div className="relative">
+                <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+                <input 
+                  type="text" required maxLength={10}
+                  value={usn}
+                  onChange={(e) => setUsn(e.target.value.toUpperCase())}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold tracking-widest uppercase"
+                  placeholder="1MS22CS001"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">Email Address</label>
               <div className="relative">
