@@ -61,6 +61,16 @@ export default function Layout() {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto pb-32 md:pb-0 hide-scrollbar md:ml-72">
+        {/* Mobile Header */}
+        <header className="md:hidden flex items-center justify-between px-6 py-4 sticky top-0 z-[40] bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+              <GraduationCap className="text-white" size={18} />
+            </div>
+            <h1 className="text-sm font-black text-white tracking-tight uppercase">Trackify</h1>
+          </div>
+        </header>
+
         <div className="max-w-4xl mx-auto w-full p-6 md:p-10 lg:p-12 relative">
           <AnimatePresence mode="wait">
             <motion.div
