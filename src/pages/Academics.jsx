@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { Plus, ChevronDown, ChevronUp, Save, GraduationCap, Download, TrendingUp, Award, Target, XCircle } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Save, GraduationCap, Download, TrendingUp, Award, Target, XCircle, Trash2 } from 'lucide-react';
 import { calculateSGPA, calculateCGPA, calculateSubjectTotal, calculateGrade } from '../utils/academicUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -48,6 +48,30 @@ export default function Academics() {
       setIsModalOpen(false);
     } catch (e) {
       toast.error("Failed to add semester");
+    }
+  };
+
+  const handleDeleteSemester = async (id) => {
+    if (confirm('Delete this semester? All associated subjects, marks, and attendance records will be permanently lost.')) {
+      try {
+        await db.transaction('rw', [db.semesters, db.subjects, db.attendance_records, db.marks, db.timetable], async () => {
+          const subjectsToDelete = await db.subjects.where('semesterId').equals(id).toArray();
+          const subjectIds = subjectsToDelete.map(s => s.id);
+          
+          await db.attendance_records.where('subjectId').anyOf(subjectIds).delete();
+          await db.marks.where('subjectId').anyOf(subjectIds).delete();
+          await db.timetable.where('subjectId').anyOf(subjectIds).delete();
+          await db.subjects.where('semesterId').equals(id).delete();
+          await db.semesters.delete(id);
+        });
+        
+        if (activeSemesterId === id) {
+          setActiveSemesterId(null);
+        }
+        toast.success('Semester deleted');
+      } catch (e) {
+        toast.error('Failed to delete semester');
+      }
     }
   };
 
@@ -135,16 +159,26 @@ export default function Academics() {
             className="flex gap-3 overflow-x-auto px-2 pb-2 hide-scrollbar"
           >
             {semesters.map(sem => (
-              <button
-                key={sem.id}
-                onClick={() => setActiveSemesterId(sem.id)}
-                className={clsx(
-                  "px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border",
-                  activeSemesterId === sem.id ? "bg-white text-black border-white shadow-xl shadow-white/10" : "bg-white/5 text-gray-500 border-white/5 hover:bg-white/10"
-                )}
-              >
-                {sem.name}
-              </button>
+              <div key={sem.id} className="relative group flex-shrink-0">
+                <button
+                  onClick={() => setActiveSemesterId(sem.id)}
+                  className={clsx(
+                    "px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border pr-10",
+                    activeSemesterId === sem.id ? "bg-white text-black border-white shadow-xl shadow-white/10" : "bg-white/5 text-gray-500 border-white/5 hover:bg-white/10"
+                  )}
+                >
+                  {sem.name}
+                </button>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleDeleteSemester(sem.id); }}
+                  className={clsx(
+                    "absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-all",
+                    activeSemesterId === sem.id ? "text-red-500 hover:bg-red-50" : "opacity-0 pointer-events-none"
+                  )}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
             ))}
           </motion.div>
         )}
