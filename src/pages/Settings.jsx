@@ -300,7 +300,7 @@ export default function Settings() {
 
       {/* Footer Info */}
       <footer className="px-6 text-center py-4">
-        <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em]">Smart Attendance Tracker v1.5.0</p>
+        <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em]">Trackify Ultimate v1.5.0</p>
       </footer>
     </motion.div>
   );

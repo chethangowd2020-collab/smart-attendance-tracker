@@ -29,8 +29,8 @@ export default function Layout() {
               <GraduationCap className="text-white" size={24} />
             </div>
             <div>
-              <h1 className="text-lg font-black text-white tracking-tighter leading-none">ATTENDANCE</h1>
-              <p className="text-[10px] font-black text-blue-500 tracking-[0.2em]">JACK PRO</p>
+              <h1 className="text-xl font-black text-white tracking-tighter leading-none">TRACKIFY</h1>
+              <p className="text-[10px] font-black text-blue-500 tracking-[0.2em]">ULTIMATE</p>
             </div>
           </motion.div>
         </div>
