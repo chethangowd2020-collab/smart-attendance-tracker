@@ -1,30 +1,26 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { format } from 'date-fns';
-import { CheckCircle, XCircle, Slash, Calendar as CalendarIcon, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { format, startOfDay } from 'date-fns';
+import { CheckCircle2, XCircle, Slash, Calendar as CalendarIcon, AlertTriangle, ShieldCheck, RotateCcw, ArrowRight } from 'lucide-react';
 import CircularProgress from '../components/ui/CircularProgress';
 import toast from 'react-hot-toast';
+import clsx from 'clsx';
 
 export default function Home() {
-  const [today, setToday] = useState(new Date());
-  
-  // Format current date
+  const [today] = useState(new Date());
   const dateString = format(today, 'yyyy-MM-dd');
-  const dayOfWeek = today.getDay(); // 0-6
+  const dayOfWeek = today.getDay();
 
-  // Fetch all subjects and timetable for today
   const subjects = useLiveQuery(() => db.subjects.toArray(), []);
   const todayTimetable = useLiveQuery(() => db.timetable.where('dayOfWeek').equals(dayOfWeek).toArray(), [dayOfWeek]);
   const todaysRecords = useLiveQuery(() => db.attendance_records.where('date').equals(dateString).toArray(), [dateString]);
 
-  // Aggregate today's subjects
   const todaysSubjects = subjects && todayTimetable ? todayTimetable.map(t => {
     return subjects.find(s => s.id === t.subjectId);
   }).filter(Boolean) : [];
 
   const handleMarkAttendance = async (subjectId, status) => {
-    // status: 'present', 'absent', 'cancelled'
     const existingRecord = todaysRecords?.find(r => r.subjectId === subjectId);
     
     try {
@@ -43,31 +39,56 @@ export default function Home() {
           } else if (existingRecord.status === 'absent') {
             newTotal--;
           }
+          // 'cancelled' doesn't affect counts
           await db.attendance_records.delete(existingRecord.id);
         }
 
-        // Apply new status
-        if (status === 'present') {
-          newAttended++;
-          newTotal++;
-        } else if (status === 'absent') {
-          newTotal++;
+        if (status !== 'reset') {
+          // Apply new status
+          if (status === 'present') {
+            newAttended++;
+            newTotal++;
+          } else if (status === 'absent') {
+            newTotal++;
+          }
+          // 'cancelled' doesn't affect counts
+
+          await db.attendance_records.add({
+            subjectId,
+            date: dateString,
+            status
+          });
         }
 
         await db.subjects.update(subjectId, {
           attendedClasses: newAttended,
           totalClasses: newTotal
         });
-
-        await db.attendance_records.add({
-          subjectId,
-          date: dateString,
-          status
-        });
       });
-      toast.success(`Marked ${status}`, { icon: status === 'present' ? '✅' : status === 'absent' ? '❌' : '➖' });
+      
+      if (status === 'reset') {
+        toast.success('Attendance reset');
+      } else {
+        toast.success(`Marked ${status}`, { 
+          icon: status === 'present' ? '✅' : status === 'absent' ? '❌' : '➖' 
+        });
+      }
     } catch (e) {
-      toast.error('Failed to mark attendance');
+      toast.error('Failed to update attendance');
+    }
+  };
+
+  const calculateBunkAdvice = (sub) => {
+    if (sub.totalClasses === 0) return "Start marking classes!";
+    const percentage = (sub.attendedClasses / sub.totalClasses) * 100;
+    
+    if (percentage < sub.threshold) {
+      const needed = Math.ceil((sub.threshold * sub.totalClasses - 100 * sub.attendedClasses) / (100 - sub.threshold));
+      return `Attend next ${needed} classes to be safe.`;
+    } else {
+      const canBunk = Math.floor((100 * sub.attendedClasses - sub.threshold * sub.totalClasses) / sub.threshold);
+      if (canBunk === 0) return "On the edge! Don't miss the next class.";
+      return `You can bunk ${canBunk} more ${canBunk === 1 ? 'class' : 'classes'}.`;
     }
   };
 
@@ -80,55 +101,54 @@ export default function Home() {
   const riskSubjectsCount = (subjects?.length || 0) - safeSubjectsCount;
 
   return (
-    <div className="space-y-6">
-      <header className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <p className="text-blue-200 mt-1 flex items-center gap-2 font-medium">
-            <CalendarIcon size={16} />
-            {format(today, 'EEEE, MMMM do, yyyy')}
-          </p>
-        </div>
+    <div className="space-y-6 max-w-2xl mx-auto pb-20">
+      <header className="px-2">
+        <h1 className="text-3xl font-bold text-white tracking-tight">Today</h1>
+        <p className="text-blue-200/70 font-medium flex items-center gap-1.5 text-sm mt-0.5">
+          <CalendarIcon size={14} className="text-blue-400" />
+          {format(today, 'EEEE, do MMMM')}
+        </p>
       </header>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <section className="col-span-1 md:col-span-2 bg-gradient-to-br from-blue-600 to-indigo-800 rounded-2xl p-6 shadow-xl shadow-blue-900/20 flex items-center justify-between border border-blue-500/30">
-          <div>
-            <h2 className="text-blue-100 font-medium mb-1">Overall Attendance</h2>
-            <div className="flex items-end gap-2">
-              <span className="text-4xl font-bold text-white">{overallPercentage.toFixed(1)}%</span>
-              <span className="text-blue-200 mb-1">({totalAttended}/{totalClasses})</span>
-            </div>
+      {/* Main Stat Ring */}
+      <section className="mx-2 p-6 glass-card rounded-[2.5rem] flex items-center justify-between border border-white/10 shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-3xl -mr-16 -mt-16 group-hover:bg-blue-600/20 transition-all duration-500"></div>
+        <div className="relative z-10">
+          <h2 className="text-blue-200/70 text-xs font-bold uppercase tracking-widest mb-1">Overall Attendance</h2>
+          <div className="flex items-baseline gap-1">
+            <span className="text-5xl font-black text-white">{Math.round(overallPercentage)}<span className="text-2xl text-blue-400">%</span></span>
           </div>
-          <div className="bg-white/10 rounded-full p-2 backdrop-blur-sm border border-white/10">
-            <CircularProgress value={overallPercentage} size={70} strokeWidth={6} colorClass="text-white" />
-          </div>
-        </section>
+          <p className="text-gray-400 text-xs font-medium mt-1">{totalAttended} / {totalClasses} classes attended</p>
+        </div>
+        <div className="relative">
+          <CircularProgress value={overallPercentage} size={90} strokeWidth={8} colorClass="text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+        </div>
+      </section>
 
-        <section className="glass-card rounded-2xl p-4 flex flex-col justify-center gap-3">
-          <div className="flex items-center gap-3 text-green-400 bg-green-400/10 p-2 rounded-xl">
-            <ShieldCheck size={20} />
-            <span className="font-semibold">{safeSubjectsCount} Safe Subjects</span>
-          </div>
-          <div className="flex items-center gap-3 text-red-400 bg-red-400/10 p-2 rounded-xl">
-            <AlertTriangle size={20} />
-            <span className="font-semibold">{riskSubjectsCount} At-Risk Subjects</span>
-          </div>
-        </section>
+      {/* Quick Indicators */}
+      <div className="grid grid-cols-2 gap-4 px-2">
+        <div className="glass-card p-4 rounded-3xl flex flex-col items-center justify-center text-center gap-1 border border-green-500/10">
+          <span className="text-2xl font-black text-green-400">{safeSubjectsCount}</span>
+          <span className="text-[10px] font-bold text-green-500/70 uppercase tracking-tighter">Safe Subjects</span>
+        </div>
+        <div className="glass-card p-4 rounded-3xl flex flex-col items-center justify-center text-center gap-1 border border-red-500/10">
+          <span className="text-2xl font-black text-red-400">{riskSubjectsCount}</span>
+          <span className="text-[10px] font-bold text-red-500/70 uppercase tracking-tighter">At-Risk</span>
+        </div>
       </div>
 
-      {/* Today's Subjects */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-white">Today's Classes</h2>
-          <span className="text-sm text-blue-200 font-medium bg-blue-500/20 px-3 py-1 rounded-full border border-blue-500/30">{todaysSubjects.length} Classes</span>
+      {/* Today's Feed */}
+      <section className="px-2 space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em]">Schedule</h2>
+          <span className="text-[10px] font-black bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase">
+            {todaysSubjects.length} Classes
+          </span>
         </div>
 
         {todaysSubjects.length === 0 ? (
-          <div className="text-center py-12 glass-card rounded-2xl">
-            <p className="text-gray-300 mb-4">No classes scheduled for today.</p>
-            <p className="text-sm text-gray-500">Go to Settings or Timetable to add classes to your schedule.</p>
+          <div className="text-center py-12 glass-card rounded-[2rem] border-dashed border-white/10">
+            <p className="text-gray-500 text-sm font-medium italic">No classes scheduled for today.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -136,41 +156,67 @@ export default function Home() {
               const record = todaysRecords?.find(r => r.subjectId === sub.id);
               const percentage = sub.totalClasses ? ((sub.attendedClasses/sub.totalClasses)*100) : 0;
               const isRisk = percentage < sub.threshold && sub.totalClasses > 0;
+              const advice = calculateBunkAdvice(sub);
 
               return (
-                <div key={sub.id} className={`glass-card p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${isRisk ? 'border-red-500/50 shadow-lg shadow-red-500/10 bg-red-900/10' : ''}`}>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                      {sub.name}
-                      {isRisk && <AlertTriangle size={16} className="text-red-500" />}
-                    </h3>
-                    <p className={`text-sm ${isRisk ? 'text-red-300' : 'text-gray-400'}`}>
-                      Total: {sub.attendedClasses}/{sub.totalClasses} ({percentage.toFixed(0)}%)
-                    </p>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleMarkAttendance(sub.id, 'present')}
-                      className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-4 py-2 rounded-lg transition-all ${record?.status === 'present' ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'}`}
-                    >
-                      <CheckCircle size={18} />
-                      <span className="sm:hidden lg:inline">Present</span>
-                    </button>
-                    <button 
-                      onClick={() => handleMarkAttendance(sub.id, 'absent')}
-                      className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-4 py-2 rounded-lg transition-all ${record?.status === 'absent' ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'}`}
-                    >
-                      <XCircle size={18} />
-                      <span className="sm:hidden lg:inline">Absent</span>
-                    </button>
-                    <button 
-                      onClick={() => handleMarkAttendance(sub.id, 'cancelled')}
-                      className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-4 py-2 rounded-lg transition-all ${record?.status === 'cancelled' ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/30' : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'}`}
-                    >
-                      <Slash size={18} />
-                      <span className="sm:hidden lg:inline">Cancel</span>
-                    </button>
+                <div key={sub.id} className="glass-card rounded-[2rem] overflow-hidden transition-all duration-300">
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="text-lg font-bold text-white tracking-tight">{sub.name}</h3>
+                        <p className={clsx(
+                          "text-xs font-bold mt-0.5",
+                          isRisk ? "text-red-400" : "text-blue-400"
+                        )}>
+                          {advice}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs font-black text-gray-500 uppercase tracking-tighter">Attended</div>
+                        <div className="text-sm font-bold text-white">{sub.attendedClasses}/{sub.totalClasses}</div>
+                      </div>
+                    </div>
+
+                    {/* Action Bar */}
+                    <div className="grid grid-cols-4 gap-2 mt-4">
+                      <button 
+                        onClick={() => handleMarkAttendance(sub.id, 'present')}
+                        className={clsx(
+                          "flex flex-col items-center justify-center py-3 rounded-2xl transition-all active:scale-95 border",
+                          record?.status === 'present' ? "bg-green-500 border-green-400 shadow-lg shadow-green-500/20 text-white" : "bg-white/5 border-white/5 text-gray-400 hover:bg-white/10"
+                        )}
+                      >
+                        <CheckCircle2 size={20} />
+                        <span className="text-[10px] font-black mt-1 uppercase tracking-tighter">Present</span>
+                      </button>
+                      <button 
+                        onClick={() => handleMarkAttendance(sub.id, 'absent')}
+                        className={clsx(
+                          "flex flex-col items-center justify-center py-3 rounded-2xl transition-all active:scale-95 border",
+                          record?.status === 'absent' ? "bg-red-500 border-red-400 shadow-lg shadow-red-500/20 text-white" : "bg-white/5 border-white/5 text-gray-400 hover:bg-white/10"
+                        )}
+                      >
+                        <XCircle size={20} />
+                        <span className="text-[10px] font-black mt-1 uppercase tracking-tighter">Absent</span>
+                      </button>
+                      <button 
+                        onClick={() => handleMarkAttendance(sub.id, 'cancelled')}
+                        className={clsx(
+                          "flex flex-col items-center justify-center py-3 rounded-2xl transition-all active:scale-95 border",
+                          record?.status === 'cancelled' ? "bg-gray-600 border-gray-500 shadow-lg shadow-gray-500/20 text-white" : "bg-white/5 border-white/5 text-gray-400 hover:bg-white/10"
+                        )}
+                      >
+                        <Slash size={20} />
+                        <span className="text-[10px] font-black mt-1 uppercase tracking-tighter">Off</span>
+                      </button>
+                      <button 
+                        onClick={() => handleMarkAttendance(sub.id, 'reset')}
+                        className="flex flex-col items-center justify-center py-3 rounded-2xl transition-all active:scale-95 border bg-white/5 border-white/5 text-gray-500 hover:bg-white/10 hover:text-white"
+                      >
+                        <RotateCcw size={20} />
+                        <span className="text-[10px] font-black mt-1 uppercase tracking-tighter">Reset</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

@@ -11,7 +11,10 @@ export default function Subjects() {
   const [activeTab, setActiveTab] = useState('subjects'); // 'subjects' | 'timetable'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedSubjectId, setExpandedSubjectId] = useState(null);
-  const [formData, setFormData] = useState({ name: '', credits: 3, threshold: 75, semesterId: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', credits: 3, threshold: 75, semesterId: '',
+    initialTotal: 0, initialAttended: 0 
+  });
   
   const subjects = useLiveQuery(() => db.subjects.toArray(), []);
   const settings = useLiveQuery(() => db.settings.get(1), []);
@@ -45,14 +48,19 @@ export default function Subjects() {
         semesterId: selectedSemesterId,
         name: formData.name,
         credits: Number(formData.credits),
-        totalClasses: 0,
-        attendedClasses: 0,
+        totalClasses: Number(formData.initialTotal) || 0,
+        attendedClasses: Number(formData.initialAttended) || 0,
+        initialTotalClasses: Number(formData.initialTotal) || 0,
+        initialAttendedClasses: Number(formData.initialAttended) || 0,
         threshold: Number(formData.threshold),
         gradingScaleId: 1
       });
       
       toast.success("Subject added!");
-      setFormData({ name: '', credits: 3, threshold: settings?.defaultThreshold || 75, semesterId: selectedSemesterId });
+      setFormData({ 
+        name: '', credits: 3, threshold: settings?.defaultThreshold || 75, semesterId: selectedSemesterId,
+        initialTotal: 0, initialAttended: 0
+      });
       setIsModalOpen(false);
     } catch (e) {
       toast.error("Failed to add subject");
@@ -314,15 +322,15 @@ export default function Subjects() {
               </button>
             </div>
             
-            <form onSubmit={handleAddSubject} className="space-y-5">
+            <form onSubmit={handleAddSubject} className="space-y-4">
               {semesters && semesters.length > 0 && (
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Semester</label>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Semester</label>
                   <select 
                     required
                     value={formData.semesterId}
                     onChange={(e) => setFormData({...formData, semesterId: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none font-medium"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none font-bold"
                   >
                     {semesters.map(sem => (
                       <option key={sem.id} value={sem.id}>{sem.name}</option>
@@ -332,43 +340,68 @@ export default function Subjects() {
               )}
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Subject Name</label>
+                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Subject Name</label>
                 <input 
                   type="text" 
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold"
                   placeholder="e.g. Computer Science"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Credits</label>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Credits</label>
                   <input 
                     type="number" 
-                    required min="1" max="10"
+                    required min="0" max="10"
                     value={formData.credits}
                     onChange={(e) => setFormData({...formData, credits: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-center"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold text-center"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Threshold (%)</label>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Threshold (%)</label>
                   <input 
                     type="number" 
                     required min="1" max="100"
                     value={formData.threshold}
                     onChange={(e) => setFormData({...formData, threshold: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-center"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold text-center"
                   />
                 </div>
               </div>
 
+              <div className="bg-blue-500/5 p-4 rounded-3xl border border-blue-500/10 space-y-4">
+                <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Mid-term Entry (Optional)</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-tighter mb-1.5 ml-1">Attended Classes</label>
+                    <input 
+                      type="number" min="0"
+                      value={formData.initialAttended}
+                      onChange={e => setFormData({ ...formData, initialAttended: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm font-bold outline-none text-center"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-tighter mb-1.5 ml-1">Total Classes</label>
+                    <input 
+                      type="number" min="0"
+                      value={formData.initialTotal}
+                      onChange={e => setFormData({ ...formData, initialTotal: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm font-bold outline-none text-center"
+                    />
+                  </div>
+                </div>
+                <p className="text-[9px] text-gray-600 font-medium px-1">Use this if you are starting to track after the semester has already begun.</p>
+              </div>
+
               <button 
                 type="submit" 
-                className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl transition-all font-bold shadow-lg shadow-blue-600/20 active:scale-[0.98] mt-2"
+                className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-[2rem] transition-all font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 active:scale-[0.98] mt-2"
               >
                 CREATE SUBJECT
               </button>

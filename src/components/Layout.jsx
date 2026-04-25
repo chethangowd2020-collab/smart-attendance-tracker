@@ -1,11 +1,12 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, Book, Calendar, GraduationCap, BarChart3, Settings } from 'lucide-react';
+import { Home, Book, Calendar, GraduationCap, BarChart3, Settings, History } from 'lucide-react';
 import clsx from 'clsx';
 
 const navItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/subjects', label: 'Subjects', icon: Book },
   { path: '/calendar', label: 'Calendar', icon: Calendar },
+  { path: '/history', label: 'History', icon: History },
   { path: '/academics', label: 'Academics', icon: GraduationCap },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/settings', label: 'Settings', icon: Settings },

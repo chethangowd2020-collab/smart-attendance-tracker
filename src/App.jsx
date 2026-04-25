@@ -7,6 +7,7 @@ import CalendarView from './pages/CalendarView';
 import Academics from './pages/Academics';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
+import History from './pages/History';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="academics" element={<Academics />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="history" element={<History />} />
           </Route>
         </Routes>
       </Router>
