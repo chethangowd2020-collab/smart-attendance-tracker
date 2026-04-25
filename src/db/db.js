@@ -43,15 +43,6 @@ export const initSettings = async () => {
     });
   }
 
-  const existingSemester = await db.semesters.count();
-  if (existingSemester === 0) {
-    await db.semesters.add({
-      name: 'Semester 1',
-      startDate: new Date().toISOString(),
-      endDate: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString(),
-      targetSgpa: 8.5
-    });
-  }
 };
 
 db.on('ready', () => {
