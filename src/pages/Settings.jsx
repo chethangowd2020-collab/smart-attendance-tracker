@@ -179,6 +179,46 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Profile Section */}
+      <Section title="Profile" icon={User} colorClass="text-purple-400">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Full Name</label>
+              <input 
+                type="text" 
+                value={localProfile.name}
+                onChange={(e) => handleProfileUpdate('name', e.target.value.toUpperCase())}
+                placeholder="E.G., JOHN DOE"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-purple-500 transition-all uppercase"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Course / Branch</label>
+                <input 
+                  type="text" 
+                  value={localProfile.course}
+                  onChange={(e) => handleProfileUpdate('course', e.target.value)}
+                  placeholder="e.g., CSE"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Semester</label>
+                <input 
+                  type="text" 
+                  value={localProfile.semester}
+                  onChange={(e) => handleProfileUpdate('semester', e.target.value)}
+                  placeholder="e.g., 4th"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* Account Section */}
       <Section title="Account" icon={User} colorClass="text-blue-400">
         <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
@@ -229,82 +269,6 @@ export default function Settings() {
               <Download className="text-blue-400" size={24} />
               <span className="text-[10px] font-black uppercase tracking-widest">Restore Cloud</span>
             </button>
-          </div>
-        </div>
-      </Section>
-
-      {/* Profile Section */}
-      <Section title="Profile" icon={User} colorClass="text-purple-400">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Full Name</label>
-              <input 
-                type="text" 
-                value={localProfile.name}
-                onChange={(e) => handleProfileUpdate('name', e.target.value)}
-                placeholder="e.g., John Doe"
-                className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Course / Branch</label>
-                <input 
-                  type="text" 
-                  value={localProfile.course}
-                  onChange={(e) => handleProfileUpdate('course', e.target.value)}
-                  placeholder="e.g., CSE"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 block ml-1">Semester</label>
-                <input 
-                  type="text" 
-                  value={localProfile.semester}
-                  onChange={(e) => handleProfileUpdate('semester', e.target.value)}
-                  placeholder="e.g., 4th"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Section>
-
-      {/* Attendance Settings */}
-      <Section title="Attendance Settings" icon={BookOpen} colorClass="text-blue-400">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-white">Minimum Threshold</h3>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Target attendance for all subjects</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <input 
-                type="number" 
-                min="1" max="100"
-                value={defaultThreshold}
-                onChange={(e) => updateSettings({ defaultThreshold: Number(e.target.value) })}
-                className="bg-white/5 border border-white/10 rounded-xl p-2.5 text-white w-16 text-center text-sm font-black focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-              <span className="text-gray-500 text-xs font-black">%</span>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            <input 
-              type="range" min="1" max="100" 
-              value={defaultThreshold}
-              onChange={(e) => updateSettings({ defaultThreshold: Number(e.target.value) })}
-              className="w-full h-1.5 bg-white/5 rounded-full appearance-none cursor-pointer accent-blue-600"
-            />
-            <div className="flex justify-between text-[8px] font-black text-gray-600 uppercase tracking-widest px-1">
-              <span>0%</span>
-              <span>50%</span>
-              <span>100%</span>
-            </div>
           </div>
         </div>
       </Section>
