@@ -121,7 +121,10 @@ export default function History() {
                     {record.status === 'cancelled' && <Slash size={20} />}
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white">{subject.name}</h3>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      {subject.name}
+                      {record.timetableId && <span className="text-[8px] bg-white/5 text-gray-400 px-1 rounded border border-white/5 uppercase tracking-tighter">Scheduled</span>}
+                    </h3>
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1 mt-0.5">
                       <CalendarIcon size={10} />
                       {format(parseISO(record.date), 'MMM do, yyyy')}

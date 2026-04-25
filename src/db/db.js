@@ -5,7 +5,7 @@ export const db = new Dexie('SmartAttendanceTracker');
 db.version(2).stores({
   semesters: '++id, name, startDate, endDate, targetSgpa',
   subjects: '++id, semesterId, name, credits, totalClasses, attendedClasses, threshold, gradingScaleId, initialTotalClasses, initialAttendedClasses',
-  attendance_records: '++id, subjectId, date, status', // status: 'present' | 'absent' | 'cancelled'
+  attendance_records: '++id, subjectId, date, status, timetableId', // status: 'present' | 'absent' | 'cancelled'
   timetable: '++id, dayOfWeek, subjectId', // dayOfWeek: 0-6 (0 is Sunday)
   marks: '++id, subjectId, type, maxMarks, obtainedMarks', // type: 'internal' | 'assignment' | 'semExam'
   settings: '++id' // singleton

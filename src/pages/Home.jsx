@@ -16,12 +16,9 @@ export default function Home() {
   const todayTimetable = useLiveQuery(() => db.timetable.where('dayOfWeek').equals(dayOfWeek).toArray(), [dayOfWeek]);
   const todaysRecords = useLiveQuery(() => db.attendance_records.where('date').equals(dateString).toArray(), [dateString]);
 
-  const todaysSubjects = subjects && todayTimetable ? todayTimetable.map(t => {
-    return subjects.find(s => s.id === t.subjectId);
-  }).filter(Boolean) : [];
-
-  const handleMarkAttendance = async (subjectId, status) => {
-    const existingRecord = todaysRecords?.find(r => r.subjectId === subjectId);
+  const handleMarkAttendance = async (subjectId, timetableId, status) => {
+    // Find record by timetableId to ensure specific slot tracking
+    const existingRecord = todaysRecords?.find(r => r.timetableId === timetableId);
     
     try {
       await db.transaction('rw', db.attendance_records, db.subjects, async () => {
@@ -39,7 +36,6 @@ export default function Home() {
           } else if (existingRecord.status === 'absent') {
             newTotal--;
           }
-          // 'cancelled' doesn't affect counts
           await db.attendance_records.delete(existingRecord.id);
         }
 
@@ -51,10 +47,10 @@ export default function Home() {
           } else if (status === 'absent') {
             newTotal++;
           }
-          // 'cancelled' doesn't affect counts
 
           await db.attendance_records.add({
             subjectId,
+            timetableId,
             date: dateString,
             status
           });
@@ -142,28 +138,34 @@ export default function Home() {
         <div className="flex items-center justify-between px-2">
           <h2 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em]">Schedule</h2>
           <span className="text-[10px] font-black bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase">
-            {todaysSubjects.length} Classes
+            {todayTimetable?.length || 0} Classes
           </span>
         </div>
 
-        {todaysSubjects.length === 0 ? (
+        {!todayTimetable || todayTimetable.length === 0 ? (
           <div className="text-center py-12 glass-card rounded-[2rem] border-dashed border-white/10">
             <p className="text-gray-500 text-sm font-medium italic">No classes scheduled for today.</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {todaysSubjects.map(sub => {
-              const record = todaysRecords?.find(r => r.subjectId === sub.id);
+            {todayTimetable.map((slot, index) => {
+              const sub = subjects?.find(s => s.id === slot.subjectId);
+              if (!sub) return null;
+
+              const record = todaysRecords?.find(r => r.timetableId === slot.id);
               const percentage = sub.totalClasses ? ((sub.attendedClasses/sub.totalClasses)*100) : 0;
               const isRisk = percentage < sub.threshold && sub.totalClasses > 0;
               const advice = calculateBunkAdvice(sub);
 
               return (
-                <div key={sub.id} className="glass-card rounded-[2rem] overflow-hidden transition-all duration-300">
+                <div key={slot.id} className="glass-card rounded-[2rem] overflow-hidden transition-all duration-300">
                   <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="text-lg font-bold text-white tracking-tight">{sub.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-bold text-white tracking-tight">{sub.name}</h3>
+                          <span className="text-[10px] font-black bg-white/5 text-gray-500 px-1.5 py-0.5 rounded-md border border-white/5 uppercase">Slot {index + 1}</span>
+                        </div>
                         <p className={clsx(
                           "text-xs font-bold mt-0.5",
                           isRisk ? "text-red-400" : "text-blue-400"
@@ -180,7 +182,7 @@ export default function Home() {
                     {/* Action Bar */}
                     <div className="grid grid-cols-4 gap-2 mt-4">
                       <button 
-                        onClick={() => handleMarkAttendance(sub.id, 'present')}
+                        onClick={() => handleMarkAttendance(sub.id, slot.id, 'present')}
                         className={clsx(
                           "flex flex-col items-center justify-center py-3 rounded-2xl transition-all active:scale-95 border",
                           record?.status === 'present' ? "bg-green-500 border-green-400 shadow-lg shadow-green-500/20 text-white" : "bg-white/5 border-white/5 text-gray-400 hover:bg-white/10"
@@ -190,7 +192,7 @@ export default function Home() {
                         <span className="text-[10px] font-black mt-1 uppercase tracking-tighter">Present</span>
                       </button>
                       <button 
-                        onClick={() => handleMarkAttendance(sub.id, 'absent')}
+                        onClick={() => handleMarkAttendance(sub.id, slot.id, 'absent')}
                         className={clsx(
                           "flex flex-col items-center justify-center py-3 rounded-2xl transition-all active:scale-95 border",
                           record?.status === 'absent' ? "bg-red-500 border-red-400 shadow-lg shadow-red-500/20 text-white" : "bg-white/5 border-white/5 text-gray-400 hover:bg-white/10"
@@ -200,7 +202,7 @@ export default function Home() {
                         <span className="text-[10px] font-black mt-1 uppercase tracking-tighter">Absent</span>
                       </button>
                       <button 
-                        onClick={() => handleMarkAttendance(sub.id, 'cancelled')}
+                        onClick={() => handleMarkAttendance(sub.id, slot.id, 'cancelled')}
                         className={clsx(
                           "flex flex-col items-center justify-center py-3 rounded-2xl transition-all active:scale-95 border",
                           record?.status === 'cancelled' ? "bg-gray-600 border-gray-500 shadow-lg shadow-gray-500/20 text-white" : "bg-white/5 border-white/5 text-gray-400 hover:bg-white/10"
@@ -210,7 +212,7 @@ export default function Home() {
                         <span className="text-[10px] font-black mt-1 uppercase tracking-tighter">Off</span>
                       </button>
                       <button 
-                        onClick={() => handleMarkAttendance(sub.id, 'reset')}
+                        onClick={() => handleMarkAttendance(sub.id, slot.id, 'reset')}
                         className="flex flex-col items-center justify-center py-3 rounded-2xl transition-all active:scale-95 border bg-white/5 border-white/5 text-gray-500 hover:bg-white/10 hover:text-white"
                       >
                         <RotateCcw size={20} />
