@@ -5,7 +5,6 @@ import Home from './pages/Home';
 import Subjects from './pages/Subjects';
 import CalendarView from './pages/CalendarView';
 import Academics from './pages/Academics';
-import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import History from './pages/History';
 
@@ -26,7 +25,6 @@ function App() {
             <Route path="subjects" element={<Subjects />} />
             <Route path="calendar" element={<CalendarView />} />
             <Route path="academics" element={<Academics />} />
-            <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />
             <Route path="history" element={<History />} />
           </Route>

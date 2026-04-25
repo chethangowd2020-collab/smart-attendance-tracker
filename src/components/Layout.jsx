@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, Book, Calendar, GraduationCap, BarChart3, Settings, History } from 'lucide-react';
+import { Home, Book, Calendar, GraduationCap, Settings, History } from 'lucide-react';
 import clsx from 'clsx';
 
 const navItems = [
@@ -8,7 +8,6 @@ const navItems = [
   { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/history', label: 'History', icon: History },
   { path: '/academics', label: 'Academics', icon: GraduationCap },
-  { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
