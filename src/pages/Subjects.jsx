@@ -188,10 +188,28 @@ export default function Subjects() {
 
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-black text-white truncate leading-none mb-2">{sub.name}</h3>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 mb-2">
                             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{sub.attendedClasses}/{sub.totalClasses} Classes</span>
                             <span className="w-1 h-1 rounded-full bg-gray-800"></span>
                             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{sub.credits} Credits</span>
+                          </div>
+                          <div className={clsx(
+                            "text-[9px] font-black uppercase tracking-tighter inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border",
+                            isSafe ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-red-500/10 border-red-500/20 text-red-400"
+                          )}>
+                            {isSafe ? (
+                              <>
+                                <CheckCircle2 size={10} />
+                                {Math.floor((100 * sub.attendedClasses - sub.threshold * sub.totalClasses) / sub.threshold) === 0 
+                                  ? "On the edge" 
+                                  : `Can bunk ${Math.floor((100 * sub.attendedClasses - sub.threshold * sub.totalClasses) / sub.threshold)} classes`}
+                              </>
+                            ) : (
+                              <>
+                                <AlertCircle size={10} />
+                                {`Attend next ${Math.ceil((sub.threshold * sub.totalClasses - 100 * sub.attendedClasses) / (100 - sub.threshold))} classes`}
+                              </>
+                            )}
                           </div>
                         </div>
 
