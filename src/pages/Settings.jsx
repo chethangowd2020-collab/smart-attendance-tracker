@@ -4,7 +4,7 @@ import { db } from '../db/db';
 import { 
   Settings as SettingsIcon, Download, Upload, Trash2, Moon, Sun, 
   User, BookOpen, GraduationCap, Bell, Palette, Database, Shield,
-  ChevronRight, Save, LogOut
+  ChevronRight, Save, LogOut, Calendar as CalendarIcon
 } from 'lucide-react';
 import { exportDB, importInto } from 'dexie-export-import';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -61,8 +61,9 @@ export default function Settings() {
 
   const updateSettings = async (updates) => {
     try {
-      await db.settings.put({ ...settings, id: 1, ...updates });
+      await db.settings.update(1, updates);
     } catch (e) {
+      console.error("Update failed:", e);
       toast.error("Failed to save setting");
     }
   };
@@ -70,6 +71,7 @@ export default function Settings() {
   const handleProfileUpdate = async (field, value) => {
     const newProfile = { ...localProfile, [field]: value };
     setLocalProfile(newProfile);
+    // Use functional update to ensure we don't lose other fields
     await updateSettings({ profile: newProfile });
   };
 
