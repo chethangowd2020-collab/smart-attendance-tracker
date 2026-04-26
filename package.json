@@ -5,12 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run frontend\" \"npm run server\"",
+    "start": "node server/server.js",
     "frontend": "vite --host",
     "server": "node server/server.js",
     "tunnel": "concurrently \"lt --port 5173\" \"lt --port 5000\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",

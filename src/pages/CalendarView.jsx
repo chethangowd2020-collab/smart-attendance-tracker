@@ -173,7 +173,7 @@ export default function CalendarView() {
       <section className="bg-white/[0.03] border border-white/[0.06] rounded-[2.5rem] p-6 space-y-5">
         <div className="flex items-center justify-between">
           <motion.button whileTap={{ scale: 0.9 }} onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-            className="p-3 bg-white/[0.05] hover:bg-blue-600 hover:text-white rounded-2xl text-blue-400 transition-all border border-white/[0.06]">
+            className="p-3 bg-white/[0.05] hover:bg-violet-600 hover:text-white rounded-2xl text-violet-400 transition-all border border-white/[0.06]">
             <ChevronLeft size={20} />
           </motion.button>
           <div className="text-center">
@@ -181,7 +181,7 @@ export default function CalendarView() {
             <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.4em] mt-1">{format(currentDate, 'yyyy')}</p>
           </div>
           <motion.button whileTap={{ scale: 0.9 }} onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-            className="p-3 bg-white/[0.05] hover:bg-blue-600 hover:text-white rounded-2xl text-blue-400 transition-all border border-white/[0.06]">
+            className="p-3 bg-white/[0.05] hover:bg-violet-600 hover:text-white rounded-2xl text-violet-400 transition-all border border-white/[0.06]">
             <ChevronRight size={20} />
           </motion.button>
         </div>
@@ -192,7 +192,7 @@ export default function CalendarView() {
             { label: 'Present', value: monthStats.present, color: 'text-green-400' },
             { label: 'Absent', value: monthStats.absent, color: 'text-red-400' },
             { label: 'Holiday', value: monthStats.cancelled, color: 'text-gray-500' },
-            { label: 'Rate', value: `${monthStats.pct}%`, color: monthStats.pct >= 75 ? 'text-blue-400' : 'text-red-400' },
+            { label: 'Rate', value: `${monthStats.pct}%`, color: monthStats.pct >= 75 ? 'text-violet-400' : 'text-red-400' },
           ].map(s => (
             <div key={s.label} className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-3 text-center">
               <p className={clsx('font-black text-base', s.color)}>{s.value}</p>
@@ -206,7 +206,7 @@ export default function CalendarView() {
           <motion.div
             initial={{ width: 0 }} animate={{ width: `${monthStats.pct}%` }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className={clsx('h-full rounded-full shadow-[0_0_12px_rgba(59,130,246,0.4)]', monthStats.pct >= 75 ? 'bg-gradient-to-r from-blue-600 to-blue-400' : 'bg-gradient-to-r from-red-600 to-red-400')}
+            className={clsx('h-full rounded-full shadow-[0_0_12px_rgba(59,130,246,0.4)]', monthStats.pct >= 75 ? 'bg-gradient-to-r from-violet-600 to-fuchsia-400' : 'bg-gradient-to-r from-red-600 to-red-400')}
           />
         </div>
       </section>
@@ -241,14 +241,14 @@ export default function CalendarView() {
                 onClick={() => setSelectedDate(day)}
                 className={clsx(
                   'aspect-square flex flex-col items-center justify-center rounded-2xl text-sm font-black transition-all relative',
-                  isT && !isSelected ? 'bg-blue-600 shadow-2xl shadow-blue-600/30 text-white scale-105 z-10' :
+                  isT && !isSelected ? 'bg-violet-600 shadow-2xl shadow-violet-600/30 text-white scale-105 z-10' :
                   isSelected ? 'bg-white text-black shadow-xl' :
                   'bg-white/[0.03] border border-white/[0.05] text-white hover:bg-white/[0.07]'
                 )}
               >
                 <span className="text-xs font-black">{format(day, 'd')}</span>
                 <div className="flex gap-0.5 mt-0.5">
-                  {hasPresent && <div className="w-1 h-1 rounded-full bg-blue-400" />}
+                  {hasPresent && <div className="w-1 h-1 rounded-full bg-violet-400" />}
                   {hasAbsent && <div className="w-1 h-1 rounded-full bg-red-500" />}
                   {hasCancelled && <div className="w-1 h-1 rounded-full bg-gray-500" />}
                 </div>
@@ -260,7 +260,7 @@ export default function CalendarView() {
         {/* Legend */}
         <div className="flex gap-4 mt-5 px-1">
           {[
-            { dot: 'bg-blue-400', label: 'Present' },
+            { dot: 'bg-violet-400', label: 'Present' },
             { dot: 'bg-red-500', label: 'Absent' },
             { dot: 'bg-gray-500', label: 'Holiday' },
           ].map(l => (
@@ -292,7 +292,7 @@ export default function CalendarView() {
               <div className="flex items-center justify-between px-8 py-4">
                 <div>
                   <h3 className="text-2xl font-black text-white tracking-tighter uppercase">{format(selectedDate, 'EEEE')}</h3>
-                  <p className="text-blue-400/70 text-[10px] font-black uppercase tracking-widest mt-1">{format(selectedDate, 'do MMMM, yyyy')}</p>
+                  <p className="text-violet-400/70 text-[10px] font-black uppercase tracking-widest mt-1">{format(selectedDate, 'do MMMM, yyyy')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {scheduledSlots.length > 0 && (

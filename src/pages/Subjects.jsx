@@ -113,7 +113,7 @@ export default function Subjects() {
             whileHover={{ scale: 1.08, rotate: 90 }}
             whileTap={{ scale: 0.92 }}
             onClick={handleOpenModal}
-            className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-600/30 text-white"
+            className="w-12 h-12 bg-violet-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-violet-600/30 text-white"
           >
             <Plus size={28} strokeWidth={2.5} />
           </motion.button>
@@ -132,7 +132,7 @@ export default function Subjects() {
             className={clsx(
               'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all',
               activeTab === tab.id
-                ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20'
+                ? 'bg-violet-600 text-white shadow-xl shadow-violet-600/20'
                 : 'text-gray-600 hover:text-gray-300'
             )}
           >
@@ -152,7 +152,7 @@ export default function Subjects() {
                   <BookOpen size={28} className="text-gray-700" />
                 </div>
                 <p className="text-gray-500 font-black uppercase tracking-widest text-sm">No subjects yet</p>
-                <button onClick={handleOpenModal} className="mt-5 px-6 py-2.5 bg-blue-600/10 border border-blue-600/20 rounded-full text-blue-400 text-xs font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all">
+                <button onClick={handleOpenModal} className="mt-5 px-6 py-2.5 bg-violet-600/10 border border-violet-600/20 rounded-full text-violet-400 text-xs font-black uppercase tracking-widest hover:bg-violet-600 hover:text-white transition-all">
                   Add First Subject
                 </button>
               </div>
@@ -178,7 +178,7 @@ export default function Subjects() {
                       <div className={clsx(
                         'w-14 h-14 rounded-2xl flex items-center justify-center font-black text-base border-2 shrink-0 transition-all',
                         isSafe
-                          ? 'bg-blue-600/10 border-blue-600/30 text-blue-400 shadow-lg shadow-blue-600/10'
+                          ? 'bg-violet-600/10 border-violet-600/30 text-violet-400 shadow-lg shadow-violet-600/10'
                           : 'bg-red-600/10 border-red-600/30 text-red-400 shadow-lg shadow-red-600/10'
                       )}>
                         {Math.round(pct)}%
@@ -197,7 +197,7 @@ export default function Subjects() {
                     {/* Progress bar */}
                     <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden mb-2">
                       <div
-                        className={clsx('h-full rounded-full transition-all', isSafe ? 'bg-blue-500' : 'bg-red-500')}
+                        className={clsx('h-full rounded-full transition-all', isSafe ? 'bg-violet-500' : 'bg-red-500')}
                         style={{ width: `${Math.min(pct, 100)}%` }}
                       />
                     </div>
@@ -230,7 +230,7 @@ export default function Subjects() {
                             {[
                               { label: 'Attended', value: sub.attendedClasses, color: 'text-green-400' },
                               { label: 'Total', value: sub.totalClasses, color: 'text-white' },
-                              { label: 'Credits', value: sub.credits, color: 'text-blue-400' },
+                              { label: 'Credits', value: sub.credits, color: 'text-violet-400' },
                             ].map(s => (
                               <div key={s.label} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-3 text-center">
                                 <p className={clsx('text-xl font-black', s.color)}>{s.value}</p>
@@ -240,8 +240,8 @@ export default function Subjects() {
                           </div>
 
                           {/* Manual adjustment */}
-                          <div className="bg-blue-600/[0.06] border border-blue-600/[0.15] rounded-2xl p-4 space-y-3">
-                            <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                          <div className="bg-violet-600/[0.06] border border-violet-600/[0.15] rounded-2xl p-4 space-y-3">
+                            <p className="text-[10px] font-black text-violet-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
                               <Edit2 size={11} /> Manual Adjustment
                             </p>
                             <div className="grid grid-cols-2 gap-3">
@@ -251,7 +251,7 @@ export default function Subjects() {
                                   type="number" min="0"
                                   value={manualAttended}
                                   onChange={e => setManualAttended(e.target.value)}
-                                  className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm font-bold outline-none focus:border-blue-500/50 transition-all"
+                                  className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm font-bold outline-none focus:border-violet-500/50 transition-all"
                                 />
                               </div>
                               <div>
@@ -260,14 +260,14 @@ export default function Subjects() {
                                   type="number" min="0"
                                   value={manualTotal}
                                   onChange={e => setManualTotal(e.target.value)}
-                                  className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm font-bold outline-none focus:border-blue-500/50 transition-all"
+                                  className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm font-bold outline-none focus:border-violet-500/50 transition-all"
                                 />
                               </div>
                             </div>
                             <motion.button
                               whileTap={{ scale: 0.97 }}
                               onClick={() => handleManualUpdate(sub)}
-                              className="w-full py-2.5 bg-blue-600 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-blue-600/20"
+                              className="w-full py-2.5 bg-violet-600 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-violet-600/20"
                             >
                               Save Adjustment
                             </motion.button>
@@ -297,7 +297,7 @@ export default function Subjects() {
                 <div key={day} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      <div className="w-2 h-2 rounded-full bg-violet-500" />
                       <p className="text-sm font-black text-white uppercase tracking-widest">{day}</p>
                     </div>
                     <span className="text-[10px] font-bold text-gray-600 bg-white/[0.04] px-2.5 py-1 rounded-full border border-white/[0.06]">
@@ -323,7 +323,7 @@ export default function Subjects() {
 
                   <select
                     onChange={e => { if (e.target.value) { handleAddTimetableEntry(dayIndex, e.target.value); e.target.value = ''; } }}
-                    className="w-full bg-white/[0.03] border border-white/[0.07] rounded-xl px-4 py-2.5 text-gray-600 text-xs font-black uppercase tracking-widest outline-none focus:border-blue-500/40 cursor-pointer"
+                    className="w-full bg-white/[0.03] border border-white/[0.07] rounded-xl px-4 py-2.5 text-gray-600 text-xs font-black uppercase tracking-widest outline-none focus:border-violet-500/40 cursor-pointer"
                     defaultValue=""
                   >
                     <option value="">+ Add class on {day}</option>
@@ -367,7 +367,7 @@ export default function Subjects() {
                     value={formData.name}
                     onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
                     placeholder="e.g. Data Structures"
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-blue-500/50 placeholder:text-gray-800 transition-all"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-violet-500/50 placeholder:text-gray-800 transition-all"
                   />
                 </div>
 
@@ -377,7 +377,7 @@ export default function Subjects() {
                     <input type="number" min="1" max="10"
                       value={formData.credits}
                       onChange={e => setFormData(p => ({ ...p, credits: e.target.value }))}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-blue-500/50 transition-all"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-violet-500/50 transition-all"
                     />
                   </div>
                   <div>
@@ -385,7 +385,7 @@ export default function Subjects() {
                     <input type="number" min="1" max="100"
                       value={formData.threshold}
                       onChange={e => setFormData(p => ({ ...p, threshold: e.target.value }))}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-blue-500/50 transition-all"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-violet-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -396,7 +396,7 @@ export default function Subjects() {
                     <select
                       value={formData.semesterId}
                       onChange={e => setFormData(p => ({ ...p, semesterId: e.target.value }))}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-blue-500/50 transition-all"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-violet-500/50 transition-all"
                     >
                       {semesters.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
@@ -443,7 +443,7 @@ export default function Subjects() {
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   type="submit"
-                  className="w-full py-4 bg-blue-600 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-2xl shadow-blue-600/30 mt-2"
+                  className="w-full py-4 bg-violet-600 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-2xl shadow-violet-600/30 mt-2"
                 >
                   Add Subject
                 </motion.button>

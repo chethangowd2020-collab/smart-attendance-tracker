@@ -142,7 +142,7 @@ export default function Academics() {
             whileTap={{ scale: 0.95 }}
             onClick={handleExportPDF}
             disabled={isExporting || !semesters?.length}
-            className="w-14 h-14 glass-card rounded-[1.5rem] flex items-center justify-center text-blue-400 border border-white/5 active:bg-blue-600 active:text-white transition-all disabled:opacity-20"
+            className="w-14 h-14 glass-card rounded-[1.5rem] flex items-center justify-center text-violet-400 border border-white/5 active:bg-violet-600 active:text-white transition-all disabled:opacity-20"
           >
             <Download size={22} />
           </motion.button>
@@ -150,7 +150,7 @@ export default function Academics() {
             whileHover={{ scale: 1.05, rotate: 90 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsModalOpen(true)}
-            className="w-14 h-14 bg-blue-600 shadow-2xl shadow-blue-600/30 text-white rounded-[1.5rem] flex items-center justify-center transition-all"
+            className="w-14 h-14 bg-violet-600 shadow-2xl shadow-violet-600/30 text-white rounded-[1.5rem] flex items-center justify-center transition-all"
           >
             <Plus size={32} strokeWidth={3} />
           </motion.button>
@@ -179,7 +179,7 @@ export default function Academics() {
                   >
                     {sem.name}
                     {activeSemesterId === sem.id && (
-                      <motion.div layoutId="sem-pill" className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                      <motion.div layoutId="sem-pill" className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-violet-600 rounded-full" />
                     )}
                   </button>
                   {activeSemesterId === sem.id && (
@@ -206,9 +206,9 @@ export default function Academics() {
             whileHover={{ y: -8 }}
             className="glass-card p-8 rounded-[3rem] border border-white/5 relative overflow-hidden group shadow-2xl"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-blue-600/20 transition-all duration-700" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-600/10 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-violet-600/20 transition-all duration-700" />
             <div className="relative z-10 flex flex-col items-center">
-              <Star className="text-blue-500/30 mb-4" size={24} />
+              <Star className="text-violet-500/30 mb-4" size={24} />
               <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Aggregate CGPA</p>
               <p className="text-5xl font-black text-white tracking-tighter">{cgpa}</p>
             </div>
@@ -239,7 +239,7 @@ export default function Academics() {
             <h2 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] flex items-center gap-2">
               <BarChart3 size={14} /> Course Progression
             </h2>
-            <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{activeSubjects.length} Registered</span>
+            <span className="text-[10px] font-black text-violet-500 uppercase tracking-widest">{activeSubjects.length} Registered</span>
           </div>
 
           <AnimatePresence mode="popLayout">
@@ -279,7 +279,7 @@ export default function Academics() {
                         <div className={clsx(
                           "w-16 h-16 rounded-[1.5rem] flex items-center justify-center font-black text-xl border-2 shrink-0 transition-all duration-500",
                           total >= 40 
-                            ? "bg-blue-600/10 border-blue-600/30 text-blue-400 shadow-xl shadow-blue-600/10" 
+                            ? "bg-violet-600/10 border-violet-600/30 text-violet-400 shadow-xl shadow-violet-600/10" 
                             : "bg-red-600/10 border-red-600/30 text-red-400 shadow-xl shadow-red-600/10"
                         )}>
                           {grade?.grade || 'F'}
@@ -293,7 +293,7 @@ export default function Academics() {
                             <span className="w-1 h-1 bg-gray-800 rounded-full" />
                             <span className={clsx(
                               "text-[9px] font-black uppercase tracking-widest",
-                              total >= 40 ? "text-blue-500" : "text-red-500"
+                              total >= 40 ? "text-violet-500" : "text-red-500"
                             )}>
                               {total >= 40 ? 'Passing' : 'Critical'}
                             </span>
@@ -337,7 +337,7 @@ export default function Academics() {
                                     type="number" 
                                     value={subMarks.find(m => m.type === markType.type)?.obtainedMarks || ''}
                                     onChange={(e) => handleMarkChange(sub.id, markType.type, e.target.value)}
-                                    className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-lg text-white font-black focus:ring-4 focus:ring-blue-600/20 outline-none text-center shadow-inner transition-all"
+                                    className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-lg text-white font-black focus:ring-4 focus:ring-violet-600/20 outline-none text-center shadow-inner transition-all"
                                     placeholder="0"
                                   />
                                   <span className="absolute top-1/2 right-4 -translate-y-1/2 text-[8px] font-black text-gray-800 uppercase">/{markType.max}</span>
@@ -346,7 +346,7 @@ export default function Academics() {
                             ))}
                           </div>
                           <div className="flex items-center justify-between text-[10px] font-black text-gray-700 uppercase tracking-widest px-1">
-                            <div className="flex items-center gap-2 text-blue-500/50">
+                            <div className="flex items-center gap-2 text-violet-500/50">
                               <Save size={12} /> Live Synchronization
                             </div>
                             <div className="flex items-center gap-2">
@@ -401,7 +401,7 @@ export default function Academics() {
                     required
                     value={semesterForm.name}
                     onChange={(e) => setSemesterForm({...semesterForm, name: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-white focus:ring-4 focus:ring-blue-600/20 outline-none font-black text-xl placeholder:text-gray-900 shadow-inner uppercase tracking-tighter"
+                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-white focus:ring-4 focus:ring-violet-600/20 outline-none font-black text-xl placeholder:text-gray-900 shadow-inner uppercase tracking-tighter"
                     placeholder="e.g. SEMESTER 4"
                   />
                 </div>
@@ -412,12 +412,12 @@ export default function Academics() {
                     required min="1" max="10" step="0.1"
                     value={semesterForm.targetSgpa}
                     onChange={(e) => setSemesterForm({...semesterForm, targetSgpa: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-white focus:ring-4 focus:ring-blue-600/20 outline-none font-black text-4xl text-center shadow-inner tracking-tighter"
+                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-white focus:ring-4 focus:ring-violet-600/20 outline-none font-black text-4xl text-center shadow-inner tracking-tighter"
                   />
                 </div>
                 <button 
                   type="submit" 
-                  className="w-full py-6 bg-blue-600 text-white rounded-[2.5rem] transition-all font-black uppercase tracking-[0.3em] shadow-2xl shadow-blue-600/40 active:scale-[0.98] mt-4 text-lg hover:bg-blue-500"
+                  className="w-full py-6 bg-violet-600 text-white rounded-[2.5rem] transition-all font-black uppercase tracking-[0.3em] shadow-2xl shadow-violet-600/40 active:scale-[0.98] mt-4 text-lg hover:bg-violet-500"
                 >
                   Establish Term
                 </button>

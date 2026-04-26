@@ -34,7 +34,7 @@ export default function Register() {
       {/* Background Orbs */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full animate-pulse delay-700" />
+        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-violet-600/10 blur-[120px] rounded-full animate-pulse delay-700" />
       </div>
 
       <motion.div 
@@ -88,14 +88,14 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1">Email Address</label>
+              <label className="block text-[10px] font-black text-violet-400 uppercase tracking-widest ml-1">Email Address</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" size={18} />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-violet-400 transition-colors" size={18} />
                 <input 
                   type="email" required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-blue-500/50 outline-none font-bold transition-all placeholder:text-gray-700"
+                  className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-violet-500/50 outline-none font-bold transition-all placeholder:text-gray-700"
                   placeholder="name@university.com"
                 />
               </div>

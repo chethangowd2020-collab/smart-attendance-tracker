@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-export default function CircularProgress({ value, max = 100, size = 60, strokeWidth = 6, colorClass = "text-blue-500" }) {
+export default function CircularProgress({ value, max = 100, size = 60, strokeWidth = 6, colorClass = "text-violet-500" }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const percent = Math.min(Math.max(value, 0), max);

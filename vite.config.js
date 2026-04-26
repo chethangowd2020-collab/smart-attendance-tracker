@@ -10,13 +10,18 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        cleanupOutdatedCaches: true,
+      },
       manifest: {
         name: 'Trackify',
         short_name: 'Trackify',
         description: 'Track attendance and academic performance.',
-        theme_color: '#111827',
-        background_color: '#111827',
+        theme_color: '#4f46e5',
+        background_color: '#ffffff',
         display: 'standalone',
+        orientation: 'portrait',
         icons: [
           {
             src: '/pwa-192x192.png',

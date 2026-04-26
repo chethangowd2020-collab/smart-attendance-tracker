@@ -82,7 +82,7 @@ export default function AttendanceHistory() {
           className={clsx(
             'flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs font-black uppercase tracking-widest transition-all',
             showFilter
-              ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/20'
+              ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/20'
               : 'bg-white/[0.04] border-white/[0.08] text-gray-600 hover:text-white'
           )}
         >
@@ -99,7 +99,7 @@ export default function AttendanceHistory() {
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder="Search by subject, date or status..."
-          className="w-full bg-white/[0.04] border border-white/[0.07] rounded-2xl pl-11 pr-10 py-3.5 text-white text-sm font-bold outline-none focus:border-blue-500/40 placeholder:text-gray-800 transition-all"
+          className="w-full bg-white/[0.04] border border-white/[0.07] rounded-2xl pl-11 pr-10 py-3.5 text-white text-sm font-bold outline-none focus:border-violet-500/40 placeholder:text-gray-800 transition-all"
         />
         {searchQuery && (
           <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -124,7 +124,7 @@ export default function AttendanceHistory() {
                   className={clsx(
                     'shrink-0 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all border',
                     selectedSubjectId === 'all'
-                      ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/20'
+                      ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/20'
                       : 'bg-white/[0.04] border-white/[0.08] text-gray-600 hover:text-white'
                   )}
                 >
@@ -137,7 +137,7 @@ export default function AttendanceHistory() {
                     className={clsx(
                       'shrink-0 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all border whitespace-nowrap',
                       selectedSubjectId === String(s.id)
-                        ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/20'
+                        ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/20'
                         : 'bg-white/[0.04] border-white/[0.08] text-gray-600 hover:text-white'
                     )}
                   >
@@ -165,7 +165,7 @@ export default function AttendanceHistory() {
             <div key={date} className="space-y-3">
               {/* Date header */}
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500/60 shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-violet-500/60 shrink-0" />
                 <p className="text-[11px] font-black text-gray-600 uppercase tracking-[0.2em]">
                   {date === 'Unknown' ? 'Unknown Date' : format(new Date(date), 'EEEE, MMMM d, yyyy')}
                 </p>

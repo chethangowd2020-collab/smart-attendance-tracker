@@ -242,7 +242,7 @@ export default function Settings() {
           ))}
           <button
             onClick={handleProfileUpdate}
-            className="w-full py-2.5 bg-blue-500 rounded-lg text-white font-semibold text-sm"
+            className="w-full py-2.5 bg-violet-500 rounded-lg text-white font-semibold text-sm"
           >
             Save Changes
           </button>

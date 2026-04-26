@@ -110,7 +110,7 @@ export default function Home() {
         <div>
           <h1 className="text-3xl font-black text-white tracking-tighter">Dashboard</h1>
           <p className="text-gray-500 text-xs font-semibold mt-0.5 flex items-center gap-1.5">
-            <Activity size={11} className="text-blue-500" /> Live Overview
+            <Activity size={11} className="text-violet-500" /> Live Overview
           </p>
         </div>
         <div className="text-right">
@@ -122,14 +122,14 @@ export default function Home() {
       {/* ── Overall Stat Hero ─────────────────────────────────────── */}
       <motion.section
         variants={item}
-        className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-[2.5rem] p-7 flex items-center justify-between shadow-2xl shadow-blue-900/40 relative overflow-hidden"
+        className="bg-gradient-to-br from-violet-700 via-purple-700 to-fuchsia-800 rounded-[2.5rem] p-7 flex items-center justify-between shadow-2xl shadow-violet-900/50 relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-56 h-56 bg-white/10 blur-3xl -mr-16 -mt-16 rounded-full" />
         <div className="relative z-10">
-          <p className="text-blue-200/70 text-[10px] font-bold uppercase tracking-[0.25em] mb-2">Overall Attendance</p>
+          <p className="text-violet-200/70 text-[10px] font-bold uppercase tracking-[0.25em] mb-2">Overall Attendance</p>
           <div className="flex items-baseline gap-1">
             <span className="text-6xl font-black text-white tracking-tighter">{Math.round(stats.percentage)}</span>
-            <span className="text-xl text-blue-200">%</span>
+            <span className="text-xl text-violet-200">%</span>
           </div>
           <div className="flex flex-wrap gap-3 mt-4">
             <div className="bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
@@ -145,12 +145,12 @@ export default function Home() {
           <div className="flex gap-4 mt-3">
             <div className="text-center">
               <p className="text-white font-black text-lg leading-none">{stats.safe}</p>
-              <p className="text-blue-200/60 text-[9px] font-bold uppercase tracking-wider mt-0.5">Safe</p>
+              <p className="text-violet-200/60 text-[9px] font-bold uppercase tracking-wider mt-0.5">Safe</p>
             </div>
             {stats.risk > 0 && (
               <div className="text-center">
                 <p className="text-red-300 font-black text-lg leading-none">{stats.risk}</p>
-                <p className="text-blue-200/60 text-[9px] font-bold uppercase tracking-wider mt-0.5">At Risk</p>
+                <p className="text-violet-200/60 text-[9px] font-bold uppercase tracking-wider mt-0.5">At Risk</p>
               </div>
             )}
           </div>
@@ -166,7 +166,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-5">
           <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">7-Day Trend</p>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <div className="w-2 h-2 rounded-full bg-violet-500" />
             <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Attendance %</span>
           </div>
         </div>
@@ -184,7 +184,7 @@ export default function Home() {
               />
               <Bar dataKey="pct" radius={[8, 8, 8, 8]}>
                 {weeklyData.map((entry, i) => (
-                  <Cell key={i} fill={entry.ds === dateString ? '#3b82f6' : '#1f2937'} fillOpacity={entry.ds === dateString ? 1 : 0.6} />
+                  <Cell key={i} fill={entry.ds === dateString ? '#7c3aed' : '#1f2937'} fillOpacity={entry.ds === dateString ? 1 : 0.6} />
                 ))}
               </Bar>
             </BarChart>
@@ -196,7 +196,7 @@ export default function Home() {
       <motion.section variants={item} className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clock size={14} className="text-blue-500" />
+            <Clock size={14} className="text-violet-500" />
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-[0.2em]">Today's Classes</p>
           </div>
           <div className="bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.06]">
@@ -239,7 +239,7 @@ export default function Home() {
                           <h3 className="text-base font-black text-white tracking-tight">{sub.name}</h3>
                           <div className={clsx(
                             'flex items-center gap-1 text-[10px] font-bold mt-0.5',
-                            advice.type === 'danger' ? 'text-red-400' : 'text-blue-400'
+                            advice.type === 'danger' ? 'text-red-400' : 'text-violet-400'
                           )}>
                             {advice.type === 'danger' ? <AlertTriangle size={9} /> : <Zap size={9} />}
                             {advice.text}

@@ -14,6 +14,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'trackify-secret-key-123';
 // Initialize DB
 db.initDb().then(() => console.log('Database initialized'));
 
+// Health Check for Render/Vercel
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Middleware to verify JWT
 const authenticate = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
