@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { 
   Plus, ChevronDown, ChevronUp, Save, GraduationCap, 
   Download, TrendingUp, Award, Target, XCircle, Trash2,
-  PieChart, BarChart3, Star
+  PieChart, BarChart3, Star, Edit2
 } from 'lucide-react';
 import { calculateSGPA, calculateCGPA, calculateSubjectTotal, calculateGrade } from '../utils/academicUtils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,10 +26,11 @@ export default function Academics() {
   const allSubjects = useLiveQuery(() => db.subjects.toArray(), []);
   const allMarks = useLiveQuery(() => db.marks.toArray(), []);
 
-  // Initialize active semester
-  if (semesters?.length > 0 && activeSemesterId === null) {
-    setActiveSemesterId(semesters[0].id);
-  }
+  useEffect(() => {
+    if (semesters?.length > 0 && activeSemesterId === null) {
+      setActiveSemesterId(semesters[0].id);
+    }
+  }, [semesters, activeSemesterId]);
 
   const activeSemester = semesters?.find(s => s.id === activeSemesterId);
   const activeSubjects = allSubjects?.filter(s => s.semesterId === activeSemesterId) || [];

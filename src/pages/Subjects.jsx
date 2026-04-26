@@ -4,7 +4,7 @@ import { db } from '../db/db';
 import { 
   Plus, Trash2, Calendar, XCircle, MoreVertical, 
   Info, CheckCircle2, AlertCircle, Clock, BookOpen,
-  ChevronDown, ChevronUp, Target
+  ChevronDown, ChevronUp, Target, Edit2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -277,7 +277,7 @@ export default function Subjects() {
 
                             <div className="bg-blue-600/10 p-6 rounded-[2.5rem] border border-blue-500/20 space-y-5">
                               <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                                <Edit className="w-3 h-3" /> Manual Adjustment
+                                <Edit2 className="w-3 h-3" /> Manual Adjustment
                               </p>
                               <div className="grid grid-cols-2 gap-5">
                                 <div className="space-y-2">

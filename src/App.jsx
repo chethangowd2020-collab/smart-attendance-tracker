@@ -7,7 +7,7 @@ import Subjects from './pages/Subjects';
 import CalendarView from './pages/CalendarView';
 import Academics from './pages/Academics';
 import Settings from './pages/Settings';
-import History from './pages/History';
+import AttendanceHistory from './pages/History';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -47,7 +47,7 @@ function App() {
             <Route path="calendar" element={<CalendarView />} />
             <Route path="academics" element={<Academics />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="history" element={<History />} />
+            <Route path="history" element={<AttendanceHistory />} />
           </Route>
         </Routes>
       </Router>

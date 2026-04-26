@@ -5,7 +5,7 @@ import { format, startOfWeek, addDays, isSameDay, subDays } from 'date-fns';
 import { 
   CheckCircle2, XCircle, Slash, Calendar as CalendarIcon, 
   AlertTriangle, ShieldCheck, RotateCcw, ArrowRight, 
-  Zap, TrendingUp, Book, Activity, Clock
+  Zap, TrendingUp, Book, Activity, Clock, History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CircularProgress from '../components/ui/CircularProgress';

@@ -185,7 +185,7 @@ export default function Settings() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full" />
         <div className="relative z-10">
           <div className="w-24 h-24 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-[2.5rem] flex items-center justify-center text-white text-3xl font-black mx-auto mb-6 shadow-2xl shadow-blue-600/30 border-2 border-white/10">
-            {localProfile.name ? localProfile.name[0] : user?.email[0].toUpperCase()}
+            {localProfile.name ? localProfile.name[0] : user?.email?.[0]?.toUpperCase()}
           </div>
           <h2 className="text-2xl font-black text-white tracking-tighter mb-1 uppercase">
             {localProfile.name || 'Anonymous User'}

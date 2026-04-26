@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { format, parseISO } from 'date-fns';
@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
-export default function History() {
+export default function AttendanceHistory() {
   const [selectedSubjectId, setSelectedSubjectId] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -22,7 +22,7 @@ export default function History() {
       query = query.where('subjectId').equals(Number(selectedSubjectId));
     }
     const results = await query.toArray();
-    return results.sort((a, b) => b.date.localeCompare(a.date));
+    return results.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   }, [selectedSubjectId]);
 
   const handleDeleteRecord = async (record) => {
@@ -107,8 +107,10 @@ export default function History() {
         <AnimatePresence mode="popLayout">
           {!filteredRecords || filteredRecords.length === 0 ? (
             <motion.div 
+              key="empty"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
               className="text-center py-28 glass-card rounded-[4rem] border-2 border-dashed border-white/5"
             >
               <div className="bg-white/5 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
