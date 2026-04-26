@@ -18,8 +18,8 @@ export default defineConfig({
         name: 'Trackify',
         short_name: 'Trackify',
         description: 'Efficient and smart attendance tracking.',
-        theme_color: '#4f46e5',
-        background_color: '#ffffff',
+        theme_color: '#10b981',
+        background_color: '#020617',
         display: 'standalone',
         orientation: 'portrait',
         icons: [

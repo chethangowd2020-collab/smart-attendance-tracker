@@ -22,15 +22,15 @@ function App() {
     <AuthProvider>
       <Toaster position="bottom-center" toastOptions={{
         style: {
-          background: '#1a1a1a',
+          background: '#0f172a',
           color: '#fff',
-          border: '1px solid #262626',
+          border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: '1rem',
           padding: '0.75rem 1.25rem',
           fontSize: '13px',
           fontWeight: '500',
         },
-        success: { iconTheme: { primary: '#4ade80', secondary: '#000' } },
+        success: { iconTheme: { primary: '#10b981', secondary: '#0f172a' } },
         error: { iconTheme: { primary: '#f87171', secondary: '#000' } },
       }} />
       <Router>
