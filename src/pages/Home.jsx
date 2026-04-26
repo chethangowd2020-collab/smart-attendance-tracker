@@ -1,17 +1,20 @@
 import { useState, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { format, isSameDay, subDays } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import {
   CheckCircle2, XCircle, Slash, AlertTriangle, ShieldCheck,
-  RotateCcw, Zap, TrendingUp, Activity, Clock, MoreHorizontal,
-  Heart, MessageCircle, Send, Bookmark
+  RotateCcw, Zap, TrendingUp, Activity, Clock, History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CircularProgress from '../components/ui/CircularProgress';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
+
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
+const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function Home() {
   const [today] = useState(new Date());
@@ -22,7 +25,7 @@ export default function Home() {
   const subjects = useLiveQuery(() => db.subjects.toArray(), []);
   const todayTimetable = useLiveQuery(() => db.timetable.where('dayOfWeek').equals(dayOfWeek).toArray(), [dayOfWeek]);
   const todaysRecords = useLiveQuery(() => db.attendance_records.where('date').equals(dateString).toArray(), [dateString]);
-  const allRecords = useLiveQuery(() => db.attendance_records.orderBy('date').reverse().limit(50).toArray(), []);
+  const allRecords = useLiveQuery(() => db.attendance_records.orderBy('date').reverse().limit(60).toArray(), []);
 
   const handleMarkAttendance = async (subjectId, timetableId, status) => {
     const existingRecord = todaysRecords?.find(r => r.timetableId === timetableId);
@@ -40,26 +43,37 @@ export default function Home() {
         if (status !== 'reset') {
           if (status === 'present') { newAttended++; newTotal++; }
           else if (status === 'absent') { newTotal++; }
-          await db.attendance_records.add({ subjectId, timetableId, date: dateString, status, timestamp: new Date().getTime() });
+          await db.attendance_records.add({ subjectId, timetableId, date: dateString, status, timestamp: Date.now() });
         }
-        await db.subjects.update(subjectId, { attendedClasses: newAttended, totalClasses: newTotal });
+        await db.subjects.update(subjectId, { attendedClasses: Math.max(0, newAttended), totalClasses: Math.max(0, newTotal) });
       });
-      toast.success(status === 'reset' ? 'Reset' : `Marked ${status}`, { duration: 1500 });
-    } catch (e) {
-      toast.error('Failed to update');
-    }
+      toast.success(status === 'reset' ? 'Reset' : `Marked ${status}`, { duration: 1400 });
+    } catch { toast.error('Failed to update'); }
   };
 
   const calculateBunkAdvice = (sub) => {
-    if (sub.totalClasses === 0) return { text: 'Start tracking', type: 'neutral' };
+    if (sub.totalClasses === 0) return { text: 'Start marking classes!', type: 'neutral' };
     const pct = (sub.attendedClasses / sub.totalClasses) * 100;
     if (pct < sub.threshold) {
       const needed = Math.ceil((sub.threshold * sub.totalClasses - 100 * sub.attendedClasses) / (100 - sub.threshold));
-      return { text: `Attend ${needed} more`, type: 'danger' };
+      return { text: `Attend next ${needed} classes`, type: 'danger' };
     }
     const canBunk = Math.floor((100 * sub.attendedClasses - sub.threshold * sub.totalClasses) / sub.threshold);
-    return { text: canBunk === 0 ? "Don't miss next" : `Safe to skip ${canBunk}`, type: 'safe' };
+    return { text: canBunk === 0 ? "On the edge! Don't miss" : `Can bunk ${canBunk} classes`, type: 'safe' };
   };
+
+  // Weekly trend
+  const weeklyData = useMemo(() => {
+    if (!allRecords) return [];
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = subDays(today, 6 - i);
+      const ds = format(date, 'yyyy-MM-dd');
+      const recs = allRecords.filter(r => r.date === ds);
+      const present = recs.filter(r => r.status === 'present').length;
+      const total = recs.filter(r => r.status !== 'cancelled').length;
+      return { name: format(date, 'EEE'), pct: total === 0 ? 0 : Math.round((present / total) * 100), ds };
+    });
+  }, [allRecords, today]);
 
   const stats = useMemo(() => {
     if (!subjects) return { percentage: 0, attended: 0, total: 0, safe: 0, risk: 0 };
@@ -70,12 +84,10 @@ export default function Home() {
     return { percentage, attended, total, safe, risk: subjects.length - safe };
   }, [subjects]);
 
-  // ── Streak counter ────────────────────────────────────────────
+  // Streak counter
   const streak = useMemo(() => {
     if (!allRecords) return 0;
-    const presentDates = new Set(
-      allRecords.filter(r => r.status === 'present').map(r => r.date)
-    );
+    const presentDates = new Set(allRecords.filter(r => r.status === 'present').map(r => r.date));
     const todayStr = format(new Date(), 'yyyy-MM-dd');
     const startOffset = presentDates.has(todayStr) ? 0 : 1;
     let count = 0;
@@ -87,274 +99,232 @@ export default function Home() {
     return count;
   }, [allRecords]);
 
-  const gradients = [
-    'from-[#f09433] via-[#e6683c] to-[#bc1888]',
-    'from-[#405de6] via-[#5851db] to-[#833ab4]',
-    'from-[#fcb045] via-[#fd1d1d] to-[#833ab4]',
-    'from-[#12c2e9] via-[#c471ed] to-[#f64f59]',
-    'from-[#43e97b] to-[#38f9d7]',
-    'from-[#f093fb] to-[#f5576c]',
-  ];
+  const todayStr = format(today, 'MMMM do');
+  const dayStr = format(today, 'EEEE');
 
   return (
-    <div className="max-w-[470px] mx-auto">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32">
 
-      {/* ── Stories Row (Subject Quick View) ── */}
-      {subjects && subjects.length > 0 && (
-        <div className="px-4 py-3 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-4">
-            {/* Your Stats "story" */}
-            <div className="flex flex-col items-center gap-1.5 shrink-0">
-              <div className="relative">
-                <div className={clsx(
-                  'w-16 h-16 rounded-full p-[2px]',
-                  stats.percentage >= 75
-                    ? 'bg-gradient-to-tr from-[#43e97b] to-[#38f9d7]'
-                    : 'bg-gradient-to-tr from-[#fd1d1d] to-[#fcb045]'
-                )}>
-                  <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">{Math.round(stats.percentage)}%</span>
-                  </div>
-                </div>
-              </div>
-              <span className="text-[11px] text-[#e0e0e0] truncate max-w-[64px] text-center">Overall</span>
+      {/* ── Header ────────────────────────────────────────────────── */}
+      <motion.div variants={item} className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-black text-white tracking-tighter">Dashboard</h1>
+          <p className="text-gray-500 text-xs font-semibold mt-0.5 flex items-center gap-1.5">
+            <Activity size={11} className="text-blue-500" /> Live Overview
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-white font-bold text-sm">{todayStr}</p>
+          <p className="text-gray-600 text-xs font-semibold uppercase tracking-widest">{dayStr}</p>
+        </div>
+      </motion.div>
+
+      {/* ── Overall Stat Hero ─────────────────────────────────────── */}
+      <motion.section
+        variants={item}
+        className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-[2.5rem] p-7 flex items-center justify-between shadow-2xl shadow-blue-900/40 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-56 h-56 bg-white/10 blur-3xl -mr-16 -mt-16 rounded-full" />
+        <div className="relative z-10">
+          <p className="text-blue-200/70 text-[10px] font-bold uppercase tracking-[0.25em] mb-2">Overall Attendance</p>
+          <div className="flex items-baseline gap-1">
+            <span className="text-6xl font-black text-white tracking-tighter">{Math.round(stats.percentage)}</span>
+            <span className="text-xl text-blue-200">%</span>
+          </div>
+          <div className="flex flex-wrap gap-3 mt-4">
+            <div className="bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
+              <TrendingUp size={11} className="text-green-300" />
+              <span className="text-white/80 text-[10px] font-bold uppercase tracking-tight">{stats.attended}/{stats.total} Classes</span>
             </div>
+            {streak > 0 && (
+              <div className="bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                <span className="text-[10px] font-black text-orange-300">🔥 {streak} day streak</span>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-4 mt-3">
+            <div className="text-center">
+              <p className="text-white font-black text-lg leading-none">{stats.safe}</p>
+              <p className="text-blue-200/60 text-[9px] font-bold uppercase tracking-wider mt-0.5">Safe</p>
+            </div>
+            {stats.risk > 0 && (
+              <div className="text-center">
+                <p className="text-red-300 font-black text-lg leading-none">{stats.risk}</p>
+                <p className="text-blue-200/60 text-[9px] font-bold uppercase tracking-wider mt-0.5">At Risk</p>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="relative scale-110 shrink-0">
+          <CircularProgress value={stats.percentage} size={110} strokeWidth={11} colorClass="text-white" />
+          <Zap className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/30" size={26} />
+        </div>
+      </motion.section>
 
-            {subjects.slice(0, 8).map((sub, i) => {
-              const pct = sub.totalClasses === 0 ? 0 : (sub.attendedClasses / sub.totalClasses) * 100;
-              const isSafe = pct >= sub.threshold;
+      {/* ── Weekly Bar Chart ──────────────────────────────────────── */}
+      <motion.section variants={item} className="bg-white/[0.03] border border-white/[0.06] rounded-[2rem] p-6">
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">7-Day Trend</p>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Attendance %</span>
+          </div>
+        </div>
+        <div className="h-40">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={weeklyData} barSize={28}>
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#4b5563', fontSize: 10, fontWeight: 700 }} dy={8} />
+              <Tooltip
+                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                content={({ active, payload }) => active && payload?.length ? (
+                  <div className="bg-black/80 border border-white/10 px-3 py-1.5 rounded-xl">
+                    <p className="text-[11px] font-black text-white">{Math.round(payload[0].value)}%</p>
+                  </div>
+                ) : null}
+              />
+              <Bar dataKey="pct" radius={[8, 8, 8, 8]}>
+                {weeklyData.map((entry, i) => (
+                  <Cell key={i} fill={entry.ds === dateString ? '#3b82f6' : '#1f2937'} fillOpacity={entry.ds === dateString ? 1 : 0.6} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.section>
+
+      {/* ── Today's Classes ───────────────────────────────────────── */}
+      <motion.section variants={item} className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock size={14} className="text-blue-500" />
+            <p className="text-[11px] font-black text-gray-500 uppercase tracking-[0.2em]">Today's Classes</p>
+          </div>
+          <div className="bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.06]">
+            <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">{todayTimetable?.length || 0} Scheduled</span>
+          </div>
+        </div>
+
+        {!todayTimetable || todayTimetable.length === 0 ? (
+          <div className="text-center py-16 bg-white/[0.02] rounded-[2rem] border-2 border-dashed border-white/[0.06]">
+            <div className="w-14 h-14 bg-white/[0.04] rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <Zap size={22} className="text-gray-700" />
+            </div>
+            <p className="text-gray-500 text-sm font-black uppercase tracking-wider">No classes today!</p>
+            <p className="text-gray-700 text-xs font-bold mt-1 uppercase">Enjoy your free day</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {todayTimetable.map((slot, index) => {
+              const sub = subjects?.find(s => s.id === slot.subjectId);
+              if (!sub) return null;
+              const record = todaysRecords?.find(r => r.timetableId === slot.id);
+              const advice = calculateBunkAdvice(sub);
+              const pct = sub.totalClasses === 0 ? 0 : Math.round((sub.attendedClasses / sub.totalClasses) * 100);
+
               return (
-                <div key={sub.id} className="flex flex-col items-center gap-1.5 shrink-0">
-                  <div className={clsx(
-                    'w-16 h-16 rounded-full p-[2px]',
-                    isSafe ? `bg-gradient-to-tr ${gradients[i % gradients.length]}` : 'bg-[#333]'
-                  )}>
-                    <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                      <span className="text-white font-bold text-[11px] text-center px-1 leading-tight">{Math.round(pct)}%</span>
+                <motion.div layout key={slot.id} className="bg-white/[0.03] border border-white/[0.06] rounded-[2rem] overflow-hidden">
+                  <div className="p-6">
+                    {/* Subject header */}
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-4">
+                        <div className={clsx(
+                          'w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base border-2 transition-all',
+                          record?.status === 'present' ? 'bg-green-500/20 border-green-500/40 text-green-400 shadow-lg shadow-green-500/10' :
+                          record?.status === 'absent' ? 'bg-red-500/20 border-red-500/40 text-red-400 shadow-lg shadow-red-500/10' :
+                          'bg-white/[0.05] border-white/10 text-gray-500'
+                        )}>
+                          {index + 1}
+                        </div>
+                        <div>
+                          <h3 className="text-base font-black text-white tracking-tight">{sub.name}</h3>
+                          <div className={clsx(
+                            'flex items-center gap-1 text-[10px] font-bold mt-0.5',
+                            advice.type === 'danger' ? 'text-red-400' : 'text-blue-400'
+                          )}>
+                            {advice.type === 'danger' ? <AlertTriangle size={9} /> : <Zap size={9} />}
+                            {advice.text}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-black text-lg tracking-tight">{pct}%</p>
+                        <p className="text-gray-600 text-[9px] font-bold uppercase tracking-widest">{sub.attendedClasses}/{sub.totalClasses}</p>
+                      </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="h-1 bg-white/[0.05] rounded-full mb-5 overflow-hidden">
+                      <div
+                        className={clsx('h-full rounded-full transition-all', pct >= sub.threshold ? 'bg-green-500' : 'bg-red-500')}
+                        style={{ width: `${Math.min(pct, 100)}%` }}
+                      />
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { id: 'present', icon: CheckCircle2, label: 'Present', active: 'bg-green-600 border-green-500 text-white shadow-lg shadow-green-500/20' },
+                        { id: 'absent', icon: XCircle, label: 'Absent', active: 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-500/20' },
+                        { id: 'cancelled', icon: Slash, label: 'Off', active: 'bg-gray-600 border-gray-500 text-white' },
+                        { id: 'reset', icon: RotateCcw, label: 'Reset', active: 'bg-white/10 border-white/20 text-white' },
+                      ].map(action => (
+                        <motion.button
+                          key={action.id}
+                          whileTap={{ scale: 0.93 }}
+                          onClick={() => handleMarkAttendance(sub.id, slot.id, action.id)}
+                          className={clsx(
+                            'flex flex-col items-center py-3 rounded-2xl border-2 text-xs font-black uppercase tracking-tight transition-all gap-1',
+                            record?.status === action.id
+                              ? action.active
+                              : 'bg-white/[0.03] border-white/[0.07] text-gray-600 hover:text-gray-300 hover:bg-white/[0.06]'
+                          )}
+                        >
+                          <action.icon size={18} strokeWidth={2.5} />
+                          <span className="text-[8px]">{action.label}</span>
+                        </motion.button>
+                      ))}
                     </div>
                   </div>
-                  <span className="text-[11px] text-[#e0e0e0] truncate max-w-[64px] text-center">{sub.name.split(' ')[0]}</span>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </motion.section>
+
+      {/* ── Recent Activity ───────────────────────────────────────── */}
+      {allRecords && allRecords.length > 0 && (
+        <motion.section variants={item} className="space-y-3">
+          <div className="flex items-center gap-2">
+            <History size={14} className="text-purple-500" />
+            <p className="text-[11px] font-black text-gray-500 uppercase tracking-[0.2em]">Recent Activity</p>
+          </div>
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-[2rem] divide-y divide-white/[0.04]">
+            {allRecords.slice(0, 5).map(rec => {
+              const sub = subjects?.find(s => s.id === rec.subjectId);
+              return (
+                <div key={rec.id} className="flex items-center justify-between px-5 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className={clsx('w-2 h-2 rounded-full shrink-0',
+                      rec.status === 'present' ? 'bg-green-500' : rec.status === 'absent' ? 'bg-red-500' : 'bg-gray-600'
+                    )} />
+                    <div>
+                      <p className="text-sm font-bold text-white">{sub?.name || 'Unknown'}</p>
+                      <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{format(new Date(rec.date), 'MMM d, yyyy')}</p>
+                    </div>
+                  </div>
+                  <span className={clsx('text-[10px] font-black uppercase px-2.5 py-1 rounded-full',
+                    rec.status === 'present' ? 'text-green-400 bg-green-500/10' :
+                    rec.status === 'absent' ? 'text-red-400 bg-red-500/10' : 'text-gray-500 bg-gray-500/10'
+                  )}>
+                    {rec.status}
+                  </span>
                 </div>
               );
             })}
           </div>
-        </div>
+        </motion.section>
       )}
-
-      <div className="border-t border-[#262626]" />
-
-      {/* ── Overall Stats Post ── */}
-      <div className="border-b border-[#262626]">
-        {/* Post Header */}
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888] flex items-center justify-center text-white text-sm font-bold">
-              {user?.email?.[0]?.toUpperCase() || 'T'}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white">trackify</p>
-              <p className="text-xs text-[#737373]">{format(today, 'EEEE, MMMM d')}</p>
-            </div>
-          </div>
-          <MoreHorizontal size={20} className="text-white" />
-        </div>
-
-        {/* Stats Card - Post "Image" */}
-        <div className="bg-[#111] px-6 py-8 flex items-center justify-between">
-          <div>
-            <p className="text-[#737373] text-xs mb-1">Overall Attendance</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-6xl font-black text-white">{Math.round(stats.percentage)}</span>
-              <span className="text-2xl text-[#737373]">%</span>
-            </div>
-            <div className="flex gap-4 mt-4">
-              <div>
-                <p className="text-white font-semibold text-sm">{stats.attended}</p>
-                <p className="text-[#737373] text-xs">Attended</p>
-              </div>
-              <div className="w-px bg-[#262626]" />
-              <div>
-                <p className="text-white font-semibold text-sm">{stats.total}</p>
-                <p className="text-[#737373] text-xs">Total</p>
-              </div>
-              <div className="w-px bg-[#262626]" />
-              <div>
-                <p className="text-green-400 font-semibold text-sm">{stats.safe}</p>
-                <p className="text-[#737373] text-xs">Safe</p>
-              </div>
-              {stats.risk > 0 && (
-                <>
-                  <div className="w-px bg-[#262626]" />
-                  <div>
-                    <p className="text-red-400 font-semibold text-sm">{stats.risk}</p>
-                    <p className="text-[#737373] text-xs">At Risk</p>
-                  </div>
-                </>
-              )}
-              {streak > 0 && (
-                <>
-                  <div className="w-px bg-[#262626]" />
-                  <div>
-                    <p className="text-orange-400 font-semibold text-sm">{streak}🔥</p>
-                    <p className="text-[#737373] text-xs">Streak</p>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-          <CircularProgress value={stats.percentage} size={90} strokeWidth={8} colorClass={stats.percentage >= 75 ? 'text-green-400' : 'text-red-400'} />
-        </div>
-
-        {/* Post Actions */}
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-4 mb-3">
-            <Activity size={24} className="text-white" />
-            <TrendingUp size={24} className="text-white" />
-            <ShieldCheck size={24} className="text-white" />
-            <Bookmark size={24} className="text-white ml-auto" />
-          </div>
-          <p className="text-[#737373] text-xs">{format(today, 'MMMM d, yyyy').toUpperCase()}</p>
-        </div>
-      </div>
-
-      {/* ── Today's Classes Feed ── */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2 mb-4">
-          <Clock size={14} className="text-[#737373]" />
-          <span className="text-sm font-semibold text-white">Today's Classes</span>
-          <span className="text-xs text-[#737373] ml-auto">{todayTimetable?.length || 0} scheduled</span>
-        </div>
-      </div>
-
-      {!todayTimetable || todayTimetable.length === 0 ? (
-        <div className="mx-4 mb-4 border border-[#262626] rounded-2xl p-10 text-center">
-          <p className="text-white font-semibold mb-1">No classes today 🎉</p>
-          <p className="text-[#737373] text-sm">Enjoy your free day</p>
-        </div>
-      ) : (
-        <div>
-          {todayTimetable.map((slot, index) => {
-            const sub = subjects?.find(s => s.id === slot.subjectId);
-            if (!sub) return null;
-            const record = todaysRecords?.find(r => r.timetableId === slot.id);
-            const advice = calculateBunkAdvice(sub);
-            const pct = sub.totalClasses === 0 ? 0 : Math.round((sub.attendedClasses / sub.totalClasses) * 100);
-            const gradient = gradients[index % gradients.length];
-
-            return (
-              <motion.div
-                layout
-                key={slot.id}
-                className="border-b border-[#262626]"
-              >
-                {/* Post Header */}
-                <div className="flex items-center justify-between px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className={clsx(
-                      'w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr',
-                      record ? (record.status === 'present' ? 'from-green-400 to-emerald-600' : record.status === 'absent' ? 'from-red-400 to-red-600' : 'from-[#555] to-[#333]') : gradient
-                    )}>
-                      <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">{index + 1}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">{sub.name}</p>
-                      <p className={clsx('text-xs', advice.type === 'danger' ? 'text-red-400' : 'text-[#737373]')}>
-                        {advice.text}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-white font-bold text-sm">{pct}%</p>
-                    <p className="text-[#737373] text-xs">{sub.attendedClasses}/{sub.totalClasses}</p>
-                  </div>
-                </div>
-
-                {/* Attendance Actions - Instagram action bar style */}
-                <div className="px-4 pb-4 grid grid-cols-3 gap-2">
-                  <motion.button
-                    whileTap={{ scale: 0.93 }}
-                    onClick={() => handleMarkAttendance(sub.id, slot.id, 'present')}
-                    className={clsx(
-                      'flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-all',
-                      record?.status === 'present'
-                        ? 'bg-green-500 border-green-500 text-white'
-                        : 'border-[#363636] text-[#737373] hover:border-[#555] hover:text-white'
-                    )}
-                  >
-                    <CheckCircle2 size={16} strokeWidth={record?.status === 'present' ? 2.5 : 1.8} />
-                    Present
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.93 }}
-                    onClick={() => handleMarkAttendance(sub.id, slot.id, 'absent')}
-                    className={clsx(
-                      'flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-all',
-                      record?.status === 'absent'
-                        ? 'bg-red-500 border-red-500 text-white'
-                        : 'border-[#363636] text-[#737373] hover:border-[#555] hover:text-white'
-                    )}
-                  >
-                    <XCircle size={16} strokeWidth={record?.status === 'absent' ? 2.5 : 1.8} />
-                    Absent
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.93 }}
-                    onClick={() => handleMarkAttendance(sub.id, slot.id, record ? 'reset' : 'cancelled')}
-                    className={clsx(
-                      'flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-all',
-                      record?.status === 'cancelled'
-                        ? 'bg-[#555] border-[#555] text-white'
-                        : 'border-[#363636] text-[#737373] hover:border-[#555] hover:text-white'
-                    )}
-                  >
-                    {record ? <RotateCcw size={16} /> : <Slash size={16} />}
-                    {record ? 'Reset' : 'Off'}
-                  </motion.button>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ── Recent Activity ── */}
-      {allRecords && allRecords.length > 0 && (
-        <div className="border-b border-[#262626]">
-          <div className="px-4 py-4">
-            <p className="text-sm font-semibold text-white mb-3">Recent Activity</p>
-            <div className="space-y-3">
-              {allRecords.slice(0, 5).map((rec) => {
-                const sub = subjects?.find(s => s.id === rec.subjectId);
-                return (
-                  <div key={rec.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={clsx(
-                        'w-2.5 h-2.5 rounded-full',
-                        rec.status === 'present' ? 'bg-green-400' : rec.status === 'absent' ? 'bg-red-400' : 'bg-[#555]'
-                      )} />
-                      <div>
-                        <p className="text-sm text-white font-medium">{sub?.name || 'Subject'}</p>
-                        <p className="text-xs text-[#737373]">{format(new Date(rec.date), 'MMM d')}</p>
-                      </div>
-                    </div>
-                    <span className={clsx(
-                      'text-xs px-2.5 py-1 rounded-full font-medium',
-                      rec.status === 'present' ? 'bg-green-500/10 text-green-400' : rec.status === 'absent' ? 'bg-red-500/10 text-red-400' : 'bg-[#262626] text-[#737373]'
-                    )}>
-                      {rec.status}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom padding */}
-      <div className="h-6" />
-    </div>
+    </motion.div>
   );
 }

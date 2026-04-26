@@ -159,63 +159,70 @@ export default function CalendarView() {
     );
 
   return (
-    <div className="max-w-[470px] mx-auto">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32">
 
-      {/* ── Month Stats Bar ──────────────────────────────────────── */}
-      <div className="px-4 pt-4 pb-3 border-b border-[#262626]">
-        <div className="flex items-center justify-between mb-3">
-          <button onClick={() => setCurrentDate(subMonths(currentDate, 1))}>
-            <ChevronLeft size={22} className="text-white" />
-          </button>
+      {/* Header */}
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-black text-white tracking-tighter">Calendar</h1>
+          <p className="text-gray-500 text-xs font-semibold mt-0.5 uppercase tracking-widest">Attendance Log</p>
+        </div>
+      </div>
+
+      {/* ── Month Navigator + Stats ──── */}
+      <section className="bg-white/[0.03] border border-white/[0.06] rounded-[2.5rem] p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+            className="p-3 bg-white/[0.05] hover:bg-blue-600 hover:text-white rounded-2xl text-blue-400 transition-all border border-white/[0.06]">
+            <ChevronLeft size={20} />
+          </motion.button>
           <div className="text-center">
-            <p className="text-white font-bold text-base">{format(currentDate, 'MMMM yyyy')}</p>
+            <h2 className="text-xl font-black text-white uppercase tracking-tighter">{format(currentDate, 'MMMM')}</h2>
+            <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.4em] mt-1">{format(currentDate, 'yyyy')}</p>
           </div>
-          <button onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
-            <ChevronRight size={22} className="text-white" />
-          </button>
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setCurrentDate(addMonths(currentDate, 1))}
+            className="p-3 bg-white/[0.05] hover:bg-blue-600 hover:text-white rounded-2xl text-blue-400 transition-all border border-white/[0.06]">
+            <ChevronRight size={20} />
+          </motion.button>
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-4 gap-2 mb-3">
+        {/* Month stats */}
+        <div className="grid grid-cols-4 gap-2">
           {[
             { label: 'Present', value: monthStats.present, color: 'text-green-400' },
             { label: 'Absent', value: monthStats.absent, color: 'text-red-400' },
-            { label: 'Holiday', value: monthStats.cancelled, color: 'text-[#737373]' },
-            { label: 'Rate', value: `${monthStats.pct}%`, color: monthStats.pct >= 75 ? 'text-green-400' : 'text-red-400' },
+            { label: 'Holiday', value: monthStats.cancelled, color: 'text-gray-500' },
+            { label: 'Rate', value: `${monthStats.pct}%`, color: monthStats.pct >= 75 ? 'text-blue-400' : 'text-red-400' },
           ].map(s => (
-            <div key={s.label} className="bg-[#1a1a1a] rounded-xl p-2 text-center">
-              <p className={clsx('font-bold text-sm', s.color)}>{s.value}</p>
-              <p className="text-[10px] text-[#555]">{s.label}</p>
+            <div key={s.label} className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-3 text-center">
+              <p className={clsx('font-black text-base', s.color)}>{s.value}</p>
+              <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* Progress bar */}
-        <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+        <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
           <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${monthStats.pct}%` }}
+            initial={{ width: 0 }} animate={{ width: `${monthStats.pct}%` }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className={clsx('h-full rounded-full', monthStats.pct >= 75 ? 'bg-green-400' : 'bg-red-400')}
+            className={clsx('h-full rounded-full shadow-[0_0_12px_rgba(59,130,246,0.4)]', monthStats.pct >= 75 ? 'bg-gradient-to-r from-blue-600 to-blue-400' : 'bg-gradient-to-r from-red-600 to-red-400')}
           />
         </div>
-      </div>
+      </section>
 
-      {/* ── Calendar Grid ─────────────────────────────────────────── */}
-      <div className="px-4 py-4">
+      {/* ── Calendar Grid ─── */}
+      <section className="bg-white/[0.03] border border-white/[0.06] rounded-[2.5rem] p-6">
         {/* Week headers */}
-        <div className="grid grid-cols-7 mb-2">
+        <div className="grid grid-cols-7 mb-3">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-            <div key={i} className="text-center text-[11px] font-semibold text-[#555] py-1">{d}</div>
+            <div key={i} className="text-center text-[10px] font-black text-gray-700 uppercase tracking-widest py-1">{d}</div>
           ))}
         </div>
 
         {/* Day cells */}
-        <div className="grid grid-cols-7 gap-1">
-          {/* Padding cells */}
-          {Array.from({ length: startPad }).map((_, i) => (
-            <div key={`pad-${i}`} className="aspect-square" />
-          ))}
+        <div className="grid grid-cols-7 gap-2">
+          {Array.from({ length: startPad }).map((_, i) => <div key={`pad-${i}`} className="aspect-square" />)}
 
           {daysInMonth.map(day => {
             const ds = format(day, 'yyyy-MM-dd');
@@ -229,159 +236,135 @@ export default function CalendarView() {
             return (
               <motion.button
                 key={ds}
+                whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.88 }}
                 onClick={() => setSelectedDate(day)}
                 className={clsx(
-                  'aspect-square flex flex-col items-center justify-center rounded-full relative transition-all',
-                  isT && !isSelected && 'ring-2 ring-white',
-                  isSelected ? 'bg-white' : 'hover:bg-[#1a1a1a]'
+                  'aspect-square flex flex-col items-center justify-center rounded-2xl text-sm font-black transition-all relative',
+                  isT && !isSelected ? 'bg-blue-600 shadow-2xl shadow-blue-600/30 text-white scale-105 z-10' :
+                  isSelected ? 'bg-white text-black shadow-xl' :
+                  'bg-white/[0.03] border border-white/[0.05] text-white hover:bg-white/[0.07]'
                 )}
               >
-                <span className={clsx(
-                  'text-[13px] font-semibold leading-none',
-                  isSelected ? 'text-black' : isT ? 'text-white font-bold' : 'text-white'
-                )}>
-                  {format(day, 'd')}
-                </span>
-
-                {/* Status dot */}
-                <div className="flex gap-0.5 mt-0.5 h-1.5">
-                  {hasPresent && <div className="w-1 h-1 rounded-full bg-green-400" />}
-                  {hasAbsent && <div className="w-1 h-1 rounded-full bg-red-400" />}
-                  {hasCancelled && <div className="w-1 h-1 rounded-full bg-[#555]" />}
+                <span className="text-xs font-black">{format(day, 'd')}</span>
+                <div className="flex gap-0.5 mt-0.5">
+                  {hasPresent && <div className="w-1 h-1 rounded-full bg-blue-400" />}
+                  {hasAbsent && <div className="w-1 h-1 rounded-full bg-red-500" />}
+                  {hasCancelled && <div className="w-1 h-1 rounded-full bg-gray-500" />}
                 </div>
               </motion.button>
             );
           })}
         </div>
-      </div>
 
-      {/* Legend */}
-      <div className="px-4 pb-4 flex gap-4">
-        {[
-          { color: 'bg-green-400', label: 'Present' },
-          { color: 'bg-red-400', label: 'Absent' },
-          { color: 'bg-[#555]', label: 'Holiday' },
-        ].map(l => (
-          <div key={l.label} className="flex items-center gap-1.5">
-            <div className={clsx('w-2 h-2 rounded-full', l.color)} />
-            <span className="text-[11px] text-[#737373]">{l.label}</span>
-          </div>
-        ))}
-      </div>
+        {/* Legend */}
+        <div className="flex gap-4 mt-5 px-1">
+          {[
+            { dot: 'bg-blue-400', label: 'Present' },
+            { dot: 'bg-red-500', label: 'Absent' },
+            { dot: 'bg-gray-500', label: 'Holiday' },
+          ].map(l => (
+            <div key={l.label} className="flex items-center gap-1.5">
+              <div className={clsx('w-2 h-2 rounded-full', l.dot)} />
+              <span className="text-[10px] font-bold text-gray-600">{l.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* ── Day Detail Bottom Sheet ───────────────────────────────── */}
+      {/* ── Day Detail Bottom Sheet ── */}
       <AnimatePresence>
         {selectedDate && (
           <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setSelectedDate(null)}
-              className="fixed inset-0 bg-black/60 z-40"
-            />
+              className="fixed inset-0 bg-black/80 backdrop-blur-xl z-40" />
 
-            {/* Sheet */}
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-[#111] rounded-t-3xl border-t border-[#262626] max-h-[85vh] overflow-y-auto scrollbar-hide"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a] rounded-t-[3rem] border-t border-white/[0.08] max-h-[85vh] overflow-y-auto scrollbar-hide"
             >
-              {/* Handle */}
-              <div className="pt-3 pb-1 flex justify-center">
-                <div className="w-10 h-1 bg-[#363636] rounded-full" />
+              <div className="pt-4 pb-1 flex justify-center">
+                <div className="w-12 h-1.5 bg-white/10 rounded-full" />
               </div>
 
-              {/* Sheet Header */}
-              <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex items-center justify-between px-8 py-4">
                 <div>
-                  <p className="text-white font-bold text-base">{format(selectedDate, 'EEEE')}</p>
-                  <p className="text-[#737373] text-sm">{format(selectedDate, 'MMMM d, yyyy')}</p>
+                  <h3 className="text-2xl font-black text-white tracking-tighter uppercase">{format(selectedDate, 'EEEE')}</h3>
+                  <p className="text-blue-400/70 text-[10px] font-black uppercase tracking-widest mt-1">{format(selectedDate, 'do MMMM, yyyy')}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* Mark Holiday button */}
                   {scheduledSlots.length > 0 && (
-                    <motion.button
-                      whileTap={{ scale: 0.93 }}
+                    <motion.button whileTap={{ scale: 0.93 }}
                       onClick={() => handleMarkHoliday(selectedDate)}
                       className={clsx(
-                        'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors',
+                        'flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-widest border transition-all',
                         isHoliday
-                          ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                          : 'bg-[#1a1a1a] text-[#737373] border border-[#363636] hover:text-orange-400'
+                          ? 'bg-orange-500/20 border-orange-500/30 text-orange-400'
+                          : 'bg-white/[0.04] border-white/[0.08] text-gray-500 hover:text-orange-400'
                       )}
                     >
-                      🏖️ {isHoliday ? 'Holiday' : 'Holiday'}
+                      🏖️ Holiday
                     </motion.button>
                   )}
-                  <button
-                    onClick={() => setSelectedDate(null)}
-                    className="p-2 rounded-full hover:bg-[#1a1a1a] transition-colors"
-                  >
-                    <X size={20} className="text-[#737373]" />
+                  <button onClick={() => setSelectedDate(null)}
+                    className="p-2.5 bg-white/[0.05] rounded-2xl border border-white/[0.07] text-gray-500 hover:text-white transition-colors">
+                    <X size={18} />
                   </button>
                 </div>
               </div>
 
-              <div className="px-4 pb-8">
+              <div className="px-6 pb-12">
                 {scheduledSlots.length === 0 ? (
-                  /* No timetable for this day */
-                  <div className="py-10 text-center">
-                    <p className="text-white font-semibold mb-1">No classes scheduled</p>
-                    <p className="text-[#737373] text-sm">Set up your timetable in the Subjects tab</p>
+                  <div className="py-16 text-center">
+                    <p className="text-gray-500 font-black uppercase tracking-widest text-sm">No classes scheduled</p>
+                    <p className="text-gray-700 text-xs font-bold mt-2">Set up your timetable in the Subjects tab</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {scheduledSlots.map((slot, idx) => {
+                  <div className="space-y-4">
+                    {scheduledSlots.map((slot) => {
                       const sub = subjects?.find(s => s.id === slot.subjectId);
                       if (!sub) return null;
                       const record = selectedDayRecords.find(r => r.timetableId === slot.id);
                       const pct = sub.totalClasses === 0 ? 0 : Math.round((sub.attendedClasses / sub.totalClasses) * 100);
 
                       return (
-                        <div key={slot.id} className="bg-[#1a1a1a] rounded-2xl p-4">
-                          {/* Subject info */}
-                          <div className="flex items-center justify-between mb-3">
+                        <div key={slot.id} className="bg-white/[0.04] border border-white/[0.07] rounded-3xl p-5">
+                          <div className="flex items-center justify-between mb-4">
                             <div>
-                              <p className="text-white font-semibold text-sm">{sub.name}</p>
-                              <p className="text-[#737373] text-xs">{pct}% overall • {sub.attendedClasses}/{sub.totalClasses}</p>
+                              <p className="text-white font-black text-base tracking-tight">{sub.name}</p>
+                              <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest mt-0.5">{pct}% overall • {sub.attendedClasses}/{sub.totalClasses}</p>
                             </div>
                             {record && (
                               <span className={clsx(
-                                'text-xs px-2.5 py-1 rounded-full font-medium capitalize',
-                                record.status === 'present' ? 'bg-green-500/10 text-green-400' :
-                                record.status === 'absent' ? 'bg-red-500/10 text-red-400' :
-                                'bg-[#262626] text-[#737373]'
+                                'text-[10px] font-black uppercase px-3 py-1 rounded-full border',
+                                record.status === 'present' ? 'text-green-400 bg-green-500/10 border-green-500/20' :
+                                record.status === 'absent' ? 'text-red-400 bg-red-500/10 border-red-500/20' :
+                                'text-gray-500 bg-white/[0.04] border-white/[0.07]'
                               )}>
                                 {record.status}
                               </span>
                             )}
                           </div>
 
-                          {/* Action buttons */}
                           <div className="grid grid-cols-4 gap-2">
                             {[
-                              { status: 'present', icon: CheckCircle2, label: 'P', activeClass: 'bg-green-500 text-white border-green-500' },
-                              { status: 'absent', icon: XCircle, label: 'A', activeClass: 'bg-red-500 text-white border-red-500' },
-                              { status: 'cancelled', icon: Slash, label: 'Off', activeClass: 'bg-[#555] text-white border-[#555]' },
-                              { status: 'reset', icon: RotateCcw, label: 'Undo', activeClass: 'bg-[#363636] text-white border-[#363636]' },
+                              { status: 'present', icon: CheckCircle2, label: 'P', activeClass: 'bg-green-600 border-green-500 text-white shadow-lg shadow-green-500/20' },
+                              { status: 'absent', icon: XCircle, label: 'A', activeClass: 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-500/20' },
+                              { status: 'cancelled', icon: Slash, label: 'Off', activeClass: 'bg-gray-600 border-gray-500 text-white' },
+                              { status: 'reset', icon: RotateCcw, label: 'Undo', activeClass: 'bg-white/10 border-white/20 text-white' },
                             ].map(action => {
                               const isActive = record?.status === action.status;
                               const Icon = action.icon;
                               return (
-                                <motion.button
-                                  key={action.status}
-                                  whileTap={{ scale: 0.9 }}
+                                <motion.button key={action.status} whileTap={{ scale: 0.9 }}
                                   onClick={() => handleMarkForDate(sub.id, slot.id, selectedDateStr, action.status)}
                                   className={clsx(
-                                    'flex flex-col items-center gap-1 py-2 rounded-xl border text-xs font-semibold transition-all',
+                                    'flex flex-col items-center gap-1 py-3 rounded-2xl border-2 text-xs font-black uppercase tracking-tight transition-all',
                                     isActive
                                       ? action.activeClass
-                                      : 'border-[#363636] text-[#737373] hover:border-[#555] hover:text-white'
+                                      : 'bg-white/[0.03] border-white/[0.07] text-gray-600 hover:text-gray-300 hover:bg-white/[0.06]'
                                   )}
                                 >
                                   <Icon size={16} strokeWidth={isActive ? 2.5 : 1.8} />
@@ -393,27 +376,6 @@ export default function CalendarView() {
                         </div>
                       );
                     })}
-
-                    {/* Summary for this date */}
-                    {selectedDayRecords.length > 0 && (
-                      <div className="mt-2 flex items-center gap-3 px-2">
-                        <div className="flex gap-2">
-                          {[
-                            { key: 'present', color: 'text-green-400', label: 'present' },
-                            { key: 'absent', color: 'text-red-400', label: 'absent' },
-                            { key: 'cancelled', color: 'text-[#737373]', label: 'holiday' },
-                          ].map(s => {
-                            const cnt = selectedDayRecords.filter(r => r.status === s.key).length;
-                            if (!cnt) return null;
-                            return (
-                              <span key={s.key} className={clsx('text-xs font-medium', s.color)}>
-                                {cnt} {s.label}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -421,6 +383,6 @@ export default function CalendarView() {
           </>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
