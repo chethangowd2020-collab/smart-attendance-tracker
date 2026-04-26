@@ -70,7 +70,23 @@ export default function Home() {
     return { percentage, attended, total, safe, risk: subjects.length - safe };
   }, [subjects]);
 
-  // Subject colors for story rings (Instagram gradient style)
+  // ── Streak counter ────────────────────────────────────────────
+  const streak = useMemo(() => {
+    if (!allRecords) return 0;
+    const presentDates = new Set(
+      allRecords.filter(r => r.status === 'present').map(r => r.date)
+    );
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const startOffset = presentDates.has(todayStr) ? 0 : 1;
+    let count = 0;
+    for (let i = startOffset; i < 365; i++) {
+      const ds = format(subDays(new Date(), i), 'yyyy-MM-dd');
+      if (presentDates.has(ds)) { count++; }
+      else if (count > 0 || i > startOffset) break;
+    }
+    return count;
+  }, [allRecords]);
+
   const gradients = [
     'from-[#f09433] via-[#e6683c] to-[#bc1888]',
     'from-[#405de6] via-[#5851db] to-[#833ab4]',
@@ -172,6 +188,15 @@ export default function Home() {
                   <div>
                     <p className="text-red-400 font-semibold text-sm">{stats.risk}</p>
                     <p className="text-[#737373] text-xs">At Risk</p>
+                  </div>
+                </>
+              )}
+              {streak > 0 && (
+                <>
+                  <div className="w-px bg-[#262626]" />
+                  <div>
+                    <p className="text-orange-400 font-semibold text-sm">{streak}🔥</p>
+                    <p className="text-[#737373] text-xs">Streak</p>
                   </div>
                 </>
               )}

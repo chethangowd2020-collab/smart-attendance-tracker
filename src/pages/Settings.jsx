@@ -6,12 +6,13 @@ import { pushToCloud, pullFromCloud } from '../services/syncService';
 import {
   Settings as SettingsIcon, Download, Upload, Trash2, User, BookOpen, GraduationCap, Bell,
   Database, ChevronRight, LogOut, Cloud, RefreshCw, CheckCircle2, Edit2,
-  Lock, Zap, ArrowRight, Shield, Grid, Link2
+  Lock, Zap, ArrowRight, Shield, Grid, Link2, FileText
 } from 'lucide-react';
 import { exportDB, importInto } from 'dexie-export-import';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
+import { generateAttendancePDF } from '../utils/pdfExport';
 
 const Toggle = ({ enabled, onChange }) => (
   <button
@@ -76,6 +77,19 @@ export default function Settings() {
     await updateSettings({ profile: localProfile });
     setEditingProfile(false);
     toast.success('Profile updated');
+  };
+
+  const handlePDFExport = () => {
+    if (!subjects || subjects.length === 0) {
+      toast.error('No subjects to export');
+      return;
+    }
+    try {
+      generateAttendancePDF(subjects, localProfile.name || '', user?.email || '');
+      toast.success('PDF exported successfully');
+    } catch {
+      toast.error('PDF export failed');
+    }
   };
 
   const handleJSONExport = async () => {
@@ -265,6 +279,7 @@ export default function Settings() {
           <p className="text-[#737373] text-xs font-semibold uppercase tracking-wider mb-3">Data</p>
           <div className="space-y-1">
             {[
+              { icon: FileText, label: 'Export Attendance PDF', action: handlePDFExport },
               { icon: Download, label: 'Export as JSON', action: handleJSONExport },
               { icon: Database, label: 'Export as CSV', action: handleCSVExport },
             ].map(({ icon: Icon, label, action }) => (

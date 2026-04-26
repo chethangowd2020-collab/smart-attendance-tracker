@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, getDay, isSameDay, startOfDay } from 'date-fns';
-import { 
-  ChevronLeft, ChevronRight, Calendar as CalendarIcon, 
-  CheckCircle2, XCircle, Slash, Filter, Plus, Info, 
-  MoreVertical, X, Calendar, Activity, Zap
+import {
+  format, startOfMonth, endOfMonth, eachDayOfInterval,
+  isSameMonth, isToday, addMonths, subMonths, getDay, isSameDay
+} from 'date-fns';
+import {
+  ChevronLeft, ChevronRight, X, CheckCircle2, XCircle, Slash,
+  Palmtree, RotateCcw, Calendar as CalendarIcon, AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -14,8 +16,6 @@ import toast from 'react-hot-toast';
 export default function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
-  const [filterSubjectId, setFilterSubjectId] = useState('all');
-  const [isMarkModalOpen, setIsMarkModalOpen] = useState(false);
 
   const subjects = useLiveQuery(() => db.subjects.toArray(), []);
   const allRecords = useLiveQuery(() => db.attendance_records.toArray(), []);
@@ -24,182 +24,231 @@ export default function CalendarView() {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-  const startPadding = Array.from({ length: getDay(monthStart) }).map((_, i) => i);
 
-  const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-  const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+  // Sunday = 0 in getDay(), but we want Monday first — adjust padding
+  const startPad = getDay(monthStart); // 0=Sun ... 6=Sat
 
-  // Filtered records for the current view
-  const filteredRecords = useMemo(() => {
-    if (!allRecords) return [];
-    return allRecords.filter(r => filterSubjectId === 'all' || r.subjectId === Number(filterSubjectId));
-  }, [allRecords, filterSubjectId]);
+  // ── Monthly stats ──────────────────────────────────────────────
+  const monthStats = useMemo(() => {
+    if (!allRecords) return { present: 0, absent: 0, cancelled: 0, pct: 0 };
+    const recs = allRecords.filter(r => isSameMonth(new Date(r.date), currentDate));
+    const present = recs.filter(r => r.status === 'present').length;
+    const absent = recs.filter(r => r.status === 'absent').length;
+    const cancelled = recs.filter(r => r.status === 'cancelled').length;
+    const pct = present + absent === 0 ? 0 : Math.round((present / (present + absent)) * 100);
+    return { present, absent, cancelled, pct };
+  }, [allRecords, currentDate]);
 
-  // Monthly stats calculation
-  const stats = useMemo(() => {
-    const monthRecords = filteredRecords.filter(r => isSameMonth(new Date(r.date), currentDate));
-    const present = monthRecords.filter(r => r.status === 'present').length;
-    const absent = monthRecords.filter(r => r.status === 'absent').length;
-    const cancelled = monthRecords.filter(r => r.status === 'cancelled').length;
-    const total = present + absent;
-    const percentage = total === 0 ? 0 : (present / total) * 100;
-    
-    return { present, absent, cancelled, total, percentage };
-  }, [filteredRecords, currentDate]);
+  // ── Per-day records map ────────────────────────────────────────
+  const dayRecordsMap = useMemo(() => {
+    const map = {};
+    allRecords?.forEach(r => {
+      if (!map[r.date]) map[r.date] = [];
+      map[r.date].push(r);
+    });
+    return map;
+  }, [allRecords]);
 
-  const handleQuickMark = async (subjectId, status) => {
-    if (!selectedDate) return;
-    const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    
+  // ── Mark attendance for a specific date (used in day sheet) ───
+  const handleMarkForDate = async (subjectId, timetableId, dateStr, status) => {
+    const existing = allRecords?.find(r =>
+      r.date === dateStr &&
+      (timetableId ? r.timetableId === timetableId : r.subjectId === subjectId && !r.timetableId)
+    );
+
     try {
       await db.transaction('rw', db.attendance_records, db.subjects, async () => {
         const subject = await db.subjects.get(subjectId);
         if (!subject) return;
 
-        await db.attendance_records.add({
-          subjectId,
-          date: dateStr,
-          status,
-          timetableId: null // Manual mark
-        });
+        let newAttended = subject.attendedClasses;
+        let newTotal = subject.totalClasses;
 
-        if (status === 'present') {
-          await db.subjects.update(subjectId, {
-            attendedClasses: subject.attendedClasses + 1,
-            totalClasses: subject.totalClasses + 1
-          });
-        } else if (status === 'absent') {
-          await db.subjects.update(subjectId, {
-            totalClasses: subject.totalClasses + 1
+        // Reverse old effect
+        if (existing) {
+          if (existing.status === 'present') { newAttended--; newTotal--; }
+          else if (existing.status === 'absent') { newTotal--; }
+          await db.attendance_records.delete(existing.id);
+        }
+
+        // Apply new status
+        if (status !== 'reset') {
+          if (status === 'present') { newAttended++; newTotal++; }
+          else if (status === 'absent') { newTotal++; }
+          // 'cancelled' doesn't affect counts
+          await db.attendance_records.add({
+            subjectId,
+            timetableId: timetableId || null,
+            date: dateStr,
+            status,
+            timestamp: Date.now()
           });
         }
+
+        await db.subjects.update(subjectId, {
+          attendedClasses: Math.max(0, newAttended),
+          totalClasses: Math.max(0, newTotal)
+        });
       });
-      toast.success(`Marked ${status}`, { icon: status === 'present' ? '✅' : '❌' });
-    } catch (e) {
-      toast.error('Failed to mark attendance');
+      toast.success(status === 'reset' ? 'Reset' : `Marked ${status}`, { duration: 1200 });
+    } catch {
+      toast.error('Failed to update');
     }
   };
 
+  // ── Mark full day as holiday ───────────────────────────────────
+  const handleMarkHoliday = async (date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const dow = getDay(date);
+    const daySlots = timetable?.filter(t => t.dayOfWeek === dow) || [];
+
+    if (daySlots.length === 0) {
+      toast.error('No classes scheduled on this day');
+      return;
+    }
+
+    try {
+      for (const slot of daySlots) {
+        const existing = allRecords?.find(
+          r => r.timetableId === slot.id && r.date === dateStr
+        );
+
+        if (existing) {
+          if (existing.status === 'cancelled') continue; // already holiday
+
+          // Reverse present/absent effect
+          const subject = await db.subjects.get(slot.subjectId);
+          if (subject) {
+            let na = subject.attendedClasses;
+            let nt = subject.totalClasses;
+            if (existing.status === 'present') { na--; nt--; }
+            else if (existing.status === 'absent') { nt--; }
+            await db.subjects.update(slot.subjectId, {
+              attendedClasses: Math.max(0, na),
+              totalClasses: Math.max(0, nt)
+            });
+          }
+          await db.attendance_records.update(existing.id, { status: 'cancelled' });
+        } else {
+          // Add cancelled record
+          await db.attendance_records.add({
+            subjectId: slot.subjectId,
+            timetableId: slot.id,
+            date: dateStr,
+            status: 'cancelled',
+            timestamp: Date.now()
+          });
+        }
+      }
+      toast.success(`${format(date, 'MMM d')} marked as holiday 🏖️`);
+      setSelectedDate(null);
+    } catch {
+      toast.error('Failed to mark holiday');
+    }
+  };
+
+  // ── Day sheet data ─────────────────────────────────────────────
+  const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
+  const selectedDow = selectedDate ? getDay(selectedDate) : null;
+  const scheduledSlots = timetable?.filter(t => t.dayOfWeek === selectedDow) || [];
+  const selectedDayRecords = selectedDateStr ? (dayRecordsMap[selectedDateStr] || []) : [];
+
+  const isHoliday = scheduledSlots.length > 0 &&
+    scheduledSlots.every(slot =>
+      selectedDayRecords.some(r => r.timetableId === slot.id && r.status === 'cancelled')
+    );
+
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-8 max-w-2xl mx-auto pb-32"
-    >
-      <header className="px-3 flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter">CALENDAR</h1>
-          <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.3em] mt-1">Interactive Log</p>
-        </div>
-        <div className="relative group">
-          <select 
-            className="bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-[10px] font-black uppercase tracking-widest text-white outline-none appearance-none pr-12 focus:ring-4 focus:ring-blue-600/20 transition-all cursor-pointer shadow-inner"
-            value={filterSubjectId}
-            onChange={(e) => setFilterSubjectId(e.target.value)}
-          >
-            <option value="all">ALL MODULES</option>
-            {subjects?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-          <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500 pointer-events-none" size={14} />
-        </div>
-      </header>
+    <div className="max-w-[470px] mx-auto">
 
-      {/* Monthly Summary Card */}
-      <section className="mx-3 p-8 glass-card rounded-[3rem] border border-white/5 shadow-2xl overflow-hidden relative group">
-        <div className="absolute -top-16 -right-16 w-48 h-48 bg-blue-600/10 blur-3xl group-hover:bg-blue-600/20 transition-all duration-1000" />
-        
-        <div className="flex items-center justify-between mb-6 relative z-10">
-          <div className="flex items-center gap-2">
-            <Activity size={14} className="text-blue-500" />
-            <h3 className="text-[10px] font-black text-gray-600 uppercase tracking-widest">{format(currentDate, 'MMMM')} METRICS</h3>
-          </div>
-          <span className="text-sm font-black text-blue-400 tracking-tighter">{Math.round(stats.percentage)}% RATE</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-8 mb-8 relative z-10">
-          <div>
-            <div className="text-5xl font-black text-white tracking-tighter">{stats.present}</div>
-            <div className="text-[9px] font-black text-blue-500/50 uppercase tracking-widest mt-1">SESSIONS ATTENDED</div>
-          </div>
-          <div className="text-right">
-            <div className="text-5xl font-black text-white tracking-tighter">{stats.absent}</div>
-            <div className="text-[9px] font-black text-red-500/50 uppercase tracking-widest mt-1">SESSIONS MISSED</div>
-          </div>
-        </div>
-
-        <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden relative z-10 p-0.5 border border-white/5">
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${stats.percentage}%` }}
-            className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)]"
-          />
-        </div>
-      </section>
-
-      {/* Calendar Grid */}
-      <div className="mx-3 glass-card p-8 rounded-[3.5rem] border border-white/5 shadow-2xl relative overflow-hidden">
-        <div className="flex items-center justify-between mb-10">
-          <motion.button 
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handlePrevMonth} 
-            className="p-4 bg-white/5 hover:bg-blue-600 hover:text-white rounded-3xl text-blue-400 transition-all border border-white/5 shadow-inner"
-          >
-            <ChevronLeft size={24} />
-          </motion.button>
+      {/* ── Month Stats Bar ──────────────────────────────────────── */}
+      <div className="px-4 pt-4 pb-3 border-b border-[#262626]">
+        <div className="flex items-center justify-between mb-3">
+          <button onClick={() => setCurrentDate(subMonths(currentDate, 1))}>
+            <ChevronLeft size={22} className="text-white" />
+          </button>
           <div className="text-center">
-            <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{format(currentDate, 'MMMM')}</h2>
-            <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.4em] mt-2">{format(currentDate, 'yyyy')}</p>
+            <p className="text-white font-bold text-base">{format(currentDate, 'MMMM yyyy')}</p>
           </div>
-          <motion.button 
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handleNextMonth} 
-            className="p-4 bg-white/5 hover:bg-blue-600 hover:text-white rounded-3xl text-blue-400 transition-all border border-white/5 shadow-inner"
-          >
-            <ChevronRight size={24} />
-          </motion.button>
+          <button onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
+            <ChevronRight size={22} className="text-white" />
+          </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-3 text-center mb-6">
-          {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
-            <div key={day} className="text-[10px] font-black text-gray-800 py-1 tracking-widest">{day}</div>
+        {/* Stats row */}
+        <div className="grid grid-cols-4 gap-2 mb-3">
+          {[
+            { label: 'Present', value: monthStats.present, color: 'text-green-400' },
+            { label: 'Absent', value: monthStats.absent, color: 'text-red-400' },
+            { label: 'Holiday', value: monthStats.cancelled, color: 'text-[#737373]' },
+            { label: 'Rate', value: `${monthStats.pct}%`, color: monthStats.pct >= 75 ? 'text-green-400' : 'text-red-400' },
+          ].map(s => (
+            <div key={s.label} className="bg-[#1a1a1a] rounded-xl p-2 text-center">
+              <p className={clsx('font-bold text-sm', s.color)}>{s.value}</p>
+              <p className="text-[10px] text-[#555]">{s.label}</p>
+            </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-3">
-          {startPadding.map(i => <div key={`empty-${i}`} className="aspect-square"></div>)}
-          
+        {/* Progress bar */}
+        <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${monthStats.pct}%` }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className={clsx('h-full rounded-full', monthStats.pct >= 75 ? 'bg-green-400' : 'bg-red-400')}
+          />
+        </div>
+      </div>
+
+      {/* ── Calendar Grid ─────────────────────────────────────────── */}
+      <div className="px-4 py-4">
+        {/* Week headers */}
+        <div className="grid grid-cols-7 mb-2">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+            <div key={i} className="text-center text-[11px] font-semibold text-[#555] py-1">{d}</div>
+          ))}
+        </div>
+
+        {/* Day cells */}
+        <div className="grid grid-cols-7 gap-1">
+          {/* Padding cells */}
+          {Array.from({ length: startPad }).map((_, i) => (
+            <div key={`pad-${i}`} className="aspect-square" />
+          ))}
+
           {daysInMonth.map(day => {
-            const dateStr = format(day, 'yyyy-MM-dd');
-            const dayRecords = filteredRecords.filter(r => r.date === dateStr);
-            
-            const presentCount = dayRecords.filter(r => r.status === 'present').length;
-            const absentCount = dayRecords.filter(r => r.status === 'absent').length;
-            const cancelledCount = dayRecords.filter(r => r.status === 'cancelled').length;
-            const isSel = selectedDate && isSameDay(day, selectedDate);
+            const ds = format(day, 'yyyy-MM-dd');
+            const recs = dayRecordsMap[ds] || [];
+            const hasPresent = recs.some(r => r.status === 'present');
+            const hasAbsent = recs.some(r => r.status === 'absent');
+            const hasCancelled = recs.some(r => r.status === 'cancelled') && !hasPresent && !hasAbsent;
+            const isSelected = selectedDate && isSameDay(day, selectedDate);
+            const isT = isToday(day);
 
             return (
               <motion.button
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                key={day.toString()}
+                key={ds}
+                whileTap={{ scale: 0.88 }}
                 onClick={() => setSelectedDate(day)}
                 className={clsx(
-                  "aspect-square relative flex flex-col items-center justify-center rounded-[1.25rem] text-sm font-black transition-all",
-                  isSameMonth(day, currentDate) ? "text-white" : "text-gray-900 opacity-20",
-                  isToday(day) 
-                    ? "bg-blue-600 shadow-2xl shadow-blue-600/30 border-blue-500 scale-105 z-10" 
-                    : isSel 
-                      ? "bg-white text-black border-white shadow-xl" 
-                      : "bg-white/5 border border-white/5 hover:bg-white/10",
+                  'aspect-square flex flex-col items-center justify-center rounded-full relative transition-all',
+                  isT && !isSelected && 'ring-2 ring-white',
+                  isSelected ? 'bg-white' : 'hover:bg-[#1a1a1a]'
                 )}
               >
-                <span className={clsx(isToday(day) ? "text-white" : isSel ? "text-black" : "group-hover:text-blue-400")}>{format(day, 'd')}</span>
-                <div className="flex gap-1 mt-1.5">
-                  {presentCount > 0 && <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]"></div>}
-                  {absentCount > 0 && <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>}
-                  {cancelledCount > 0 && <div className="w-1.5 h-1.5 rounded-full bg-gray-500 shadow-[0_0_8px_rgba(107,114,128,0.6)]"></div>}
+                <span className={clsx(
+                  'text-[13px] font-semibold leading-none',
+                  isSelected ? 'text-black' : isT ? 'text-white font-bold' : 'text-white'
+                )}>
+                  {format(day, 'd')}
+                </span>
+
+                {/* Status dot */}
+                <div className="flex gap-0.5 mt-0.5 h-1.5">
+                  {hasPresent && <div className="w-1 h-1 rounded-full bg-green-400" />}
+                  {hasAbsent && <div className="w-1 h-1 rounded-full bg-red-400" />}
+                  {hasCancelled && <div className="w-1 h-1 rounded-full bg-[#555]" />}
                 </div>
               </motion.button>
             );
@@ -207,159 +256,171 @@ export default function CalendarView() {
         </div>
       </div>
 
-      {/* Bottom Sheet Details */}
+      {/* Legend */}
+      <div className="px-4 pb-4 flex gap-4">
+        {[
+          { color: 'bg-green-400', label: 'Present' },
+          { color: 'bg-red-400', label: 'Absent' },
+          { color: 'bg-[#555]', label: 'Holiday' },
+        ].map(l => (
+          <div key={l.label} className="flex items-center gap-1.5">
+            <div className={clsx('w-2 h-2 rounded-full', l.color)} />
+            <span className="text-[11px] text-[#737373]">{l.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Day Detail Bottom Sheet ───────────────────────────────── */}
       <AnimatePresence>
         {selectedDate && (
           <>
-            <motion.div 
+            {/* Backdrop */}
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedDate(null)}
-              className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[60]"
+              className="fixed inset-0 bg-black/60 z-40"
             />
-            <motion.div 
+
+            {/* Sheet */}
+            <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 w-full bg-[#0a0a0a] rounded-t-[4rem] p-10 z-[70] border-t border-white/10 shadow-2xl max-h-[85vh] overflow-y-auto hide-scrollbar"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-[#111] rounded-t-3xl border-t border-[#262626] max-h-[85vh] overflow-y-auto scrollbar-hide"
             >
-              <div className="w-16 h-2 bg-white/10 rounded-full mx-auto mb-10" onClick={() => setSelectedDate(null)} />
-              
-              <div className="flex justify-between items-start mb-10">
-                <div>
-                  <h3 className="text-3xl font-black text-white tracking-tighter uppercase">{format(selectedDate, 'EEEE')}</h3>
-                  <p className="text-blue-500 font-black text-[10px] uppercase tracking-widest mt-1">{format(selectedDate, 'do MMMM, yyyy')}</p>
-                </div>
-                <button onClick={() => setSelectedDate(null)} className="p-4 bg-white/5 rounded-3xl text-gray-600 hover:text-white transition-colors border border-white/5">
-                  <X size={24} />
-                </button>
+              {/* Handle */}
+              <div className="pt-3 pb-1 flex justify-center">
+                <div className="w-10 h-1 bg-[#363636] rounded-full" />
               </div>
 
-              <div className="space-y-5">
-                {filteredRecords.filter(r => r.date === format(selectedDate, 'yyyy-MM-dd')).length === 0 ? (
-                  <div className="py-20 text-center bg-white/[0.02] rounded-[3rem] border-2 border-dashed border-white/5">
-                    <p className="text-gray-700 font-black text-[10px] uppercase tracking-widest italic">Zero activity recorded</p>
+              {/* Sheet Header */}
+              <div className="flex items-center justify-between px-4 py-3">
+                <div>
+                  <p className="text-white font-bold text-base">{format(selectedDate, 'EEEE')}</p>
+                  <p className="text-[#737373] text-sm">{format(selectedDate, 'MMMM d, yyyy')}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* Mark Holiday button */}
+                  {scheduledSlots.length > 0 && (
+                    <motion.button
+                      whileTap={{ scale: 0.93 }}
+                      onClick={() => handleMarkHoliday(selectedDate)}
+                      className={clsx(
+                        'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors',
+                        isHoliday
+                          ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                          : 'bg-[#1a1a1a] text-[#737373] border border-[#363636] hover:text-orange-400'
+                      )}
+                    >
+                      🏖️ {isHoliday ? 'Holiday' : 'Holiday'}
+                    </motion.button>
+                  )}
+                  <button
+                    onClick={() => setSelectedDate(null)}
+                    className="p-2 rounded-full hover:bg-[#1a1a1a] transition-colors"
+                  >
+                    <X size={20} className="text-[#737373]" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="px-4 pb-8">
+                {scheduledSlots.length === 0 ? (
+                  /* No timetable for this day */
+                  <div className="py-10 text-center">
+                    <p className="text-white font-semibold mb-1">No classes scheduled</p>
+                    <p className="text-[#737373] text-sm">Set up your timetable in the Subjects tab</p>
                   </div>
                 ) : (
-                  filteredRecords
-                    .filter(r => r.date === format(selectedDate, 'yyyy-MM-dd'))
-                    .map(record => {
-                      const subject = subjects?.find(s => s.id === record.subjectId);
-                      if (!subject) return null;
-                      return (
-                        <motion.div 
-                          layout
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          key={record.id} 
-                          className="p-6 bg-white/5 rounded-[2.5rem] border border-white/5 flex items-center justify-between group active:bg-white/10 transition-all shadow-xl"
-                        >
-                          <div className="flex items-center gap-5">
-                            <div className={clsx(
-                              "w-14 h-14 rounded-[1.25rem] flex items-center justify-center border-2 shadow-lg",
-                              record.status === 'present' ? "bg-blue-600/10 border-blue-600/30 text-blue-400" :
-                              record.status === 'absent' ? "bg-red-600/10 border-red-600/30 text-red-400" : "bg-gray-600/10 border-gray-600/30 text-gray-500"
-                            )}>
-                              {record.status === 'present' && <CheckCircle2 size={28} />}
-                              {record.status === 'absent' && <XCircle size={28} />}
-                              {record.status === 'cancelled' && <Slash size={28} />}
-                            </div>
-                            <div>
-                              <p className="font-black text-white text-lg tracking-tight leading-tight mb-1">{subject.name}</p>
-                              <div className="flex items-center gap-2">
-                                <Zap size={10} className="text-gray-600" />
-                                <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">
-                                  {record.timetableId ? 'SCHEDULER SYNC' : 'MANUAL INJECTION'}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className={clsx(
-                            "text-[10px] font-black uppercase px-4 py-1.5 rounded-full border",
-                            record.status === 'present' ? "text-blue-400 border-blue-500/20 bg-blue-500/5" :
-                            record.status === 'absent' ? "text-red-400 border-red-500/20 bg-red-500/5" : "text-gray-500 border-gray-500/20 bg-gray-500/5"
-                          )}>
-                            {record.status}
-                          </div>
-                        </motion.div>
-                      );
-                    })
-                )}
-              </div>
+                  <div className="space-y-3">
+                    {scheduledSlots.map((slot, idx) => {
+                      const sub = subjects?.find(s => s.id === slot.subjectId);
+                      if (!sub) return null;
+                      const record = selectedDayRecords.find(r => r.timetableId === slot.id);
+                      const pct = sub.totalClasses === 0 ? 0 : Math.round((sub.attendedClasses / sub.totalClasses) * 100);
 
-              <div className="mt-10">
-                <motion.button 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setIsMarkModalOpen(true)}
-                  className="w-full py-6 bg-blue-600 rounded-[2.5rem] text-white font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 shadow-2xl shadow-blue-600/40 transition-all text-lg"
-                >
-                  <Plus size={24} strokeWidth={3} />
-                  Mark Attendance
-                </motion.button>
+                      return (
+                        <div key={slot.id} className="bg-[#1a1a1a] rounded-2xl p-4">
+                          {/* Subject info */}
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <p className="text-white font-semibold text-sm">{sub.name}</p>
+                              <p className="text-[#737373] text-xs">{pct}% overall • {sub.attendedClasses}/{sub.totalClasses}</p>
+                            </div>
+                            {record && (
+                              <span className={clsx(
+                                'text-xs px-2.5 py-1 rounded-full font-medium capitalize',
+                                record.status === 'present' ? 'bg-green-500/10 text-green-400' :
+                                record.status === 'absent' ? 'bg-red-500/10 text-red-400' :
+                                'bg-[#262626] text-[#737373]'
+                              )}>
+                                {record.status}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Action buttons */}
+                          <div className="grid grid-cols-4 gap-2">
+                            {[
+                              { status: 'present', icon: CheckCircle2, label: 'P', activeClass: 'bg-green-500 text-white border-green-500' },
+                              { status: 'absent', icon: XCircle, label: 'A', activeClass: 'bg-red-500 text-white border-red-500' },
+                              { status: 'cancelled', icon: Slash, label: 'Off', activeClass: 'bg-[#555] text-white border-[#555]' },
+                              { status: 'reset', icon: RotateCcw, label: 'Undo', activeClass: 'bg-[#363636] text-white border-[#363636]' },
+                            ].map(action => {
+                              const isActive = record?.status === action.status;
+                              const Icon = action.icon;
+                              return (
+                                <motion.button
+                                  key={action.status}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleMarkForDate(sub.id, slot.id, selectedDateStr, action.status)}
+                                  className={clsx(
+                                    'flex flex-col items-center gap-1 py-2 rounded-xl border text-xs font-semibold transition-all',
+                                    isActive
+                                      ? action.activeClass
+                                      : 'border-[#363636] text-[#737373] hover:border-[#555] hover:text-white'
+                                  )}
+                                >
+                                  <Icon size={16} strokeWidth={isActive ? 2.5 : 1.8} />
+                                  {action.label}
+                                </motion.button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Summary for this date */}
+                    {selectedDayRecords.length > 0 && (
+                      <div className="mt-2 flex items-center gap-3 px-2">
+                        <div className="flex gap-2">
+                          {[
+                            { key: 'present', color: 'text-green-400', label: 'present' },
+                            { key: 'absent', color: 'text-red-400', label: 'absent' },
+                            { key: 'cancelled', color: 'text-[#737373]', label: 'holiday' },
+                          ].map(s => {
+                            const cnt = selectedDayRecords.filter(r => r.status === s.key).length;
+                            if (!cnt) return null;
+                            return (
+                              <span key={s.key} className={clsx('text-xs font-medium', s.color)}>
+                                {cnt} {s.label}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
-
-      {/* Quick Mark Modal */}
-      <AnimatePresence>
-        {isMarkModalOpen && (
-          <div className="fixed inset-0 bg-black/90 backdrop-blur-2xl flex items-end sm:items-center justify-center p-0 sm:p-4 z-[100]">
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              className="bg-[#0a0a0a] p-10 rounded-t-[4rem] sm:rounded-[4rem] w-full max-w-lg shadow-2xl border-t sm:border border-white/10"
-            >
-              <div className="flex justify-between items-center mb-10">
-                <div>
-                  <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Quick Log</h2>
-                  <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest mt-1">Manual Attendance Override</p>
-                </div>
-                <button onClick={() => setIsMarkModalOpen(false)} className="p-4 bg-white/5 rounded-3xl text-gray-500 hover:text-white transition-colors">
-                  <X size={28} />
-                </button>
-              </div>
-              
-              <div className="space-y-6">
-                <p className="text-[10px] font-black text-gray-800 uppercase tracking-widest ml-1">Select Module</p>
-                <div className="space-y-4 max-h-80 overflow-y-auto pr-3 hide-scrollbar">
-                  {subjects?.map(sub => (
-                    <div key={sub.id} className="p-6 bg-white/[0.03] rounded-[2rem] border border-white/5 flex items-center justify-between group hover:bg-white/[0.05] transition-all">
-                      <span className="font-black text-white text-base tracking-tight">{sub.name}</span>
-                      <div className="flex gap-3">
-                        <motion.button 
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => { handleQuickMark(sub.id, 'present'); setIsMarkModalOpen(false); }}
-                          className="w-12 h-12 bg-blue-600/10 text-blue-400 rounded-2xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-lg shadow-blue-600/10"
-                        >
-                          <CheckCircle2 size={24} />
-                        </motion.button>
-                        <motion.button 
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => { handleQuickMark(sub.id, 'absent'); setIsMarkModalOpen(false); }}
-                          className="w-12 h-12 bg-red-600/10 text-red-400 rounded-2xl flex items-center justify-center hover:bg-red-600 hover:text-white transition-all shadow-lg shadow-red-600/10"
-                        >
-                          <XCircle size={24} />
-                        </motion.button>
-                      </div>
-                    </div>
-                  ))}
-                  {(!subjects || subjects.length === 0) && (
-                    <div className="text-center py-10 opacity-30 italic text-sm">No subjects defined yet.</div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

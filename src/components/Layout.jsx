@@ -7,18 +7,18 @@ import clsx from 'clsx';
 // Desktop sidebar shows all routes
 const sidebarItems = [
   { path: '/', label: 'Home', icon: Home },
-  { path: '/subjects', label: 'Subjects', icon: BookOpen },
   { path: '/calendar', label: 'Calendar', icon: Calendar },
+  { path: '/subjects', label: 'Subjects', icon: BookOpen },
   { path: '/history', label: 'History', icon: History },
   { path: '/academics', label: 'Academics', icon: GraduationCap },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
-// Mobile bottom nav: 5 tabs, Settings accessible via Profile tab
+// Mobile bottom nav: Ajack layout — Home, Calendar, Subjects, Grades, Profile
 const mobileNavItems = [
   { path: '/', label: 'Home', icon: Home },
-  { path: '/subjects', label: 'Subjects', icon: BookOpen },
   { path: '/calendar', label: 'Calendar', icon: Calendar },
+  { path: '/subjects', label: 'Subjects', icon: BookOpen },
   { path: '/academics', label: 'Grades', icon: GraduationCap },
   { path: '/settings', label: 'Profile', icon: User },
 ];
