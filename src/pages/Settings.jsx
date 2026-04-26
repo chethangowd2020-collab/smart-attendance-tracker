@@ -4,7 +4,7 @@ import { db } from '../db/db';
 import { useAuth } from '../context/AuthContext';
 import { pushToCloud, pullFromCloud } from '../services/syncService';
 import {
-  Settings, Download, Upload, Trash2, User, BookOpen, GraduationCap, Bell,
+  Settings as SettingsIcon, Download, Upload, Trash2, User, BookOpen, GraduationCap, Bell,
   Database, ChevronRight, LogOut, Cloud, RefreshCw, CheckCircle2, Edit2,
   Lock, Zap, ArrowRight, Shield, Grid, Link2
 } from 'lucide-react';
