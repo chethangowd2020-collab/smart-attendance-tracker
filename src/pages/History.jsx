@@ -93,13 +93,13 @@ export default function AttendanceHistory() {
 
       {/* Search */}
       <div className="relative">
-        <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" />
+        <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
         <input
           type="text"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder="Search by subject, date or status..."
-          className="w-full bg-white/[0.04] border border-white/[0.07] rounded-2xl pl-11 pr-10 py-3.5 text-white text-sm font-bold outline-none focus:border-violet-500/40 placeholder:text-gray-800 transition-all"
+          className="w-full bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.07] rounded-2xl pl-11 pr-10 py-3.5 text-zinc-900 dark:text-white text-sm font-bold outline-none focus:border-emerald-500/40 placeholder:text-zinc-400 dark:placeholder:text-zinc-800 transition-all"
         />
         {searchQuery && (
           <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -124,8 +124,8 @@ export default function AttendanceHistory() {
                   className={clsx(
                     'shrink-0 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all border',
                     selectedSubjectId === 'all'
-                      ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/20'
-                      : 'bg-white/[0.04] border-white/[0.08] text-gray-600 hover:text-white'
+                      ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-600/20'
+                      : 'bg-zinc-100 dark:bg-white/[0.04] border-zinc-200 dark:border-white/[0.08] text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
                   )}
                 >
                   All
@@ -137,8 +137,8 @@ export default function AttendanceHistory() {
                     className={clsx(
                       'shrink-0 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all border whitespace-nowrap',
                       selectedSubjectId === String(s.id)
-                        ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/20'
-                        : 'bg-white/[0.04] border-white/[0.08] text-gray-600 hover:text-white'
+                        ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-600/20'
+                        : 'bg-zinc-100 dark:bg-white/[0.04] border-zinc-200 dark:border-white/[0.08] text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
                     )}
                   >
                     {s.name.length > 14 ? s.name.slice(0, 14) + '…' : s.name}
@@ -165,11 +165,11 @@ export default function AttendanceHistory() {
             <div key={date} className="space-y-3">
               {/* Date header */}
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-violet-500/60 shrink-0" />
-                <p className="text-[11px] font-black text-gray-600 uppercase tracking-[0.2em]">
+                <div className="w-2 h-2 rounded-full bg-emerald-500/60 shrink-0" />
+                <p className="text-[11px] font-black text-zinc-500 dark:text-zinc-600 uppercase tracking-[0.2em]">
                   {date === 'Unknown' ? 'Unknown Date' : format(new Date(date), 'EEEE, MMMM d, yyyy')}
                 </p>
-                <div className="flex-1 h-px bg-white/[0.05]" />
+                <div className="flex-1 h-px bg-zinc-100 dark:bg-white/[0.05]" />
               </div>
 
               {/* Records */}
@@ -191,7 +191,7 @@ export default function AttendanceHistory() {
                       >
                         <div className={clsx('w-2.5 h-2.5 rounded-full shrink-0', cfg.dot)} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-white truncate">{sub?.name || 'Unknown Subject'}</p>
+                          <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{sub?.name || 'Unknown Subject'}</p>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <Icon size={11} className={cfg.textColor} />
                             <span className={clsx('text-[10px] font-black uppercase tracking-widest', cfg.textColor)}>{record.status}</span>

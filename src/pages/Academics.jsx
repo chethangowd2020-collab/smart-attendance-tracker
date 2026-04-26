@@ -129,11 +129,11 @@ export default function Academics() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-8 max-w-2xl mx-auto pb-32"
+      className="space-y-8 max-w-2xl mx-auto pb-32 bg-white dark:bg-[#020617] transition-colors"
     >
       <header className="flex items-center justify-between px-3">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter mb-1">PERFORMANCE</h1>
+          <h1 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter mb-1">PERFORMANCE</h1>
           <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.3em]">Academic Analytics</p>
         </div>
         <div className="flex gap-3">
@@ -150,7 +150,7 @@ export default function Academics() {
             whileHover={{ scale: 1.05, rotate: 90 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsModalOpen(true)}
-            className="w-14 h-14 bg-violet-600 shadow-2xl shadow-violet-600/30 text-white rounded-[1.5rem] flex items-center justify-center transition-all"
+            className="w-14 h-14 bg-emerald-600 shadow-2xl shadow-emerald-600/30 text-white rounded-[1.5rem] flex items-center justify-center transition-all"
           >
             <Plus size={32} strokeWidth={3} />
           </motion.button>
@@ -210,7 +210,7 @@ export default function Academics() {
             <div className="relative z-10 flex flex-col items-center">
               <Star className="text-violet-500/30 mb-4" size={24} />
               <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Aggregate CGPA</p>
-              <p className="text-5xl font-black text-white tracking-tighter">{cgpa}</p>
+              <p className="text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">{cgpa}</p>
             </div>
           </motion.div>
           
@@ -222,7 +222,7 @@ export default function Academics() {
             <div className="relative z-10 flex flex-col items-center">
               <TrendingUp className="text-green-500/30 mb-4" size={24} />
               <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Semester SGPA</p>
-              <p className="text-5xl font-black text-white tracking-tighter">{sgpa}</p>
+              <p className="text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">{sgpa}</p>
               {activeSemester?.targetSgpa && (
                 <div className="mt-4 flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
                    <Target size={12} className="text-green-500" />
@@ -239,7 +239,7 @@ export default function Academics() {
             <h2 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] flex items-center gap-2">
               <BarChart3 size={14} /> Course Progression
             </h2>
-            <span className="text-[10px] font-black text-violet-500 uppercase tracking-widest">{activeSubjects.length} Registered</span>
+            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest">{activeSubjects.length} Registered</span>
           </div>
 
           <AnimatePresence mode="popLayout">
@@ -285,7 +285,7 @@ export default function Academics() {
                           {grade?.grade || 'F'}
                         </div>
                         <div>
-                          <h3 className="text-xl font-black text-white tracking-tighter mb-2">{sub.name}</h3>
+                          <h3 className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter mb-2">{sub.name}</h3>
                           <div className="flex items-center gap-3">
                             <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
                               {sub.credits} Units
@@ -302,13 +302,13 @@ export default function Academics() {
                       </div>
                       <div className="flex items-center gap-6">
                         <div className="text-right">
-                          <p className="text-3xl font-black text-white leading-none mb-1">{total}</p>
+                          <p className="text-3xl font-black text-zinc-900 dark:text-white leading-none mb-1">{total}</p>
                           <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest">Aggregate / 100</p>
                         </div>
                         {!isExporting && (
                           <motion.div 
                             animate={{ rotate: isExpanded ? 180 : 0 }}
-                            className="p-3 bg-white/5 rounded-2xl text-gray-700 border border-white/5"
+                            className="p-3 bg-zinc-100 dark:bg-white/5 rounded-2xl text-zinc-500 border border-zinc-200 dark:border-white/5"
                           >
                             <ChevronDown size={20} />
                           </motion.div>
@@ -337,7 +337,7 @@ export default function Academics() {
                                     type="number" 
                                     value={subMarks.find(m => m.type === markType.type)?.obtainedMarks || ''}
                                     onChange={(e) => handleMarkChange(sub.id, markType.type, e.target.value)}
-                                    className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-lg text-white font-black focus:ring-4 focus:ring-violet-600/20 outline-none text-center shadow-inner transition-all"
+                                    className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-2xl p-4 text-lg text-zinc-900 dark:text-white font-black focus:ring-4 focus:ring-emerald-600/20 outline-none text-center shadow-inner transition-all"
                                     placeholder="0"
                                   />
                                   <span className="absolute top-1/2 right-4 -translate-y-1/2 text-[8px] font-black text-gray-800 uppercase">/{markType.max}</span>
@@ -381,12 +381,12 @@ export default function Academics() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="bg-[#0a0a0a] p-12 rounded-t-[4rem] sm:rounded-[4rem] w-full max-w-lg shadow-2xl border-t border-white/10 relative z-10"
+              className="bg-white dark:bg-zinc-950 p-12 rounded-t-[4rem] sm:rounded-[4rem] w-full max-w-lg shadow-2xl border-t border-zinc-200 dark:border-white/10 relative z-10"
             >
-              <div className="w-16 h-2 bg-white/10 rounded-full mx-auto mb-10 sm:hidden" onClick={() => setIsModalOpen(false)} />
+              <div className="w-16 h-2 bg-zinc-200 dark:bg-white/10 rounded-full mx-auto mb-10 sm:hidden" onClick={() => setIsModalOpen(false)} />
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h2 className="text-3xl font-black text-white uppercase tracking-tighter">New Term</h2>
+                  <h2 className="text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">New Term</h2>
                   <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest mt-1">Start a fresh academic session</p>
                 </div>
                 <button onClick={() => setIsModalOpen(false)} className="p-3 text-gray-500 hover:text-white transition-colors bg-white/5 rounded-3xl">
@@ -401,7 +401,7 @@ export default function Academics() {
                     required
                     value={semesterForm.name}
                     onChange={(e) => setSemesterForm({...semesterForm, name: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-white focus:ring-4 focus:ring-violet-600/20 outline-none font-black text-xl placeholder:text-gray-900 shadow-inner uppercase tracking-tighter"
+                    className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-[2rem] p-6 text-zinc-900 dark:text-white focus:ring-4 focus:ring-emerald-600/20 outline-none font-black text-xl placeholder:text-zinc-400 dark:placeholder:text-gray-900 shadow-inner uppercase tracking-tighter"
                     placeholder="e.g. SEMESTER 4"
                   />
                 </div>
@@ -412,12 +412,12 @@ export default function Academics() {
                     required min="1" max="10" step="0.1"
                     value={semesterForm.targetSgpa}
                     onChange={(e) => setSemesterForm({...semesterForm, targetSgpa: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-white focus:ring-4 focus:ring-violet-600/20 outline-none font-black text-4xl text-center shadow-inner tracking-tighter"
+                    className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-[2rem] p-6 text-zinc-900 dark:text-white focus:ring-4 focus:ring-emerald-600/20 outline-none font-black text-4xl text-center shadow-inner tracking-tighter"
                   />
                 </div>
                 <button 
                   type="submit" 
-                  className="w-full py-6 bg-violet-600 text-white rounded-[2.5rem] transition-all font-black uppercase tracking-[0.3em] shadow-2xl shadow-violet-600/40 active:scale-[0.98] mt-4 text-lg hover:bg-violet-500"
+                  className="w-full py-6 bg-emerald-600 text-white rounded-[2.5rem] transition-all font-black uppercase tracking-[0.3em] shadow-2xl shadow-emerald-600/40 active:scale-[0.98] mt-4 text-lg hover:bg-emerald-500"
                 >
                   Establish Term
                 </button>

@@ -293,13 +293,13 @@ export default function Subjects() {
             {DAYS.map((day, dayIndex) => {
               const daySlots = timetable?.filter(t => t.dayOfWeek === dayIndex) || [];
               return (
-                <div key={day} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+                <div key={day} className="bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] rounded-2xl p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-violet-500" />
-                      <p className="text-sm font-black text-white uppercase tracking-widest">{day}</p>
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <p className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest">{day}</p>
                     </div>
-                    <span className="text-[10px] font-bold text-gray-600 bg-white/[0.04] px-2.5 py-1 rounded-full border border-white/[0.06]">
+                    <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-white/[0.04] px-2.5 py-1 rounded-full border border-zinc-200 dark:border-white/[0.06]">
                       {daySlots.length} classes
                     </span>
                   </div>
@@ -309,8 +309,8 @@ export default function Subjects() {
                       {daySlots.map(slot => {
                         const sub = subjects?.find(s => s.id === slot.subjectId);
                         return (
-                          <div key={slot.id} className="flex items-center justify-between bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-2.5">
-                            <span className="text-sm font-bold text-white">{sub?.name || 'Unknown'}</span>
+                          <div key={slot.id} className="flex items-center justify-between bg-white dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] rounded-xl px-4 py-2.5">
+                            <span className="text-sm font-bold text-zinc-900 dark:text-white">{sub?.name || 'Unknown'}</span>
                             <button onClick={() => handleDeleteTimetableEntry(slot.id)} className="p-1">
                               <X size={14} className="text-gray-600 hover:text-red-400 transition-colors" />
                             </button>
@@ -322,7 +322,7 @@ export default function Subjects() {
 
                   <select
                     onChange={e => { if (e.target.value) { handleAddTimetableEntry(dayIndex, e.target.value); e.target.value = ''; } }}
-                    className="w-full bg-white/[0.03] border border-white/[0.07] rounded-xl px-4 py-2.5 text-gray-600 text-xs font-black uppercase tracking-widest outline-none focus:border-violet-500/40 cursor-pointer"
+                    className="w-full bg-white dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.07] rounded-xl px-4 py-2.5 text-zinc-500 text-xs font-black uppercase tracking-widest outline-none focus:border-emerald-500/40 cursor-pointer"
                     defaultValue=""
                   >
                     <option value="">+ Add class on {day}</option>
@@ -345,57 +345,57 @@ export default function Subjects() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="relative w-full max-w-lg bg-[#111] rounded-t-[3rem] border-t border-white/[0.08] p-8 pb-12 scrollbar-hide overflow-y-auto max-h-[90vh]"
+              className="relative w-full max-w-lg bg-white dark:bg-zinc-950 rounded-t-[3rem] border-t border-zinc-200 dark:border-white/[0.08] p-8 pb-12 scrollbar-hide overflow-y-auto max-h-[90vh]"
             >
-              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
+              <div className="w-12 h-1.5 bg-zinc-200 dark:bg-white/10 rounded-full mx-auto mb-8" />
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-black text-white tracking-tighter">New Subject</h2>
-                  <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest mt-1">Add to Curriculum</p>
+                  <h2 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter">New Subject</h2>
+                  <p className="text-zinc-500 dark:text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-1">Add to Curriculum</p>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="p-3 bg-white/[0.05] rounded-2xl text-gray-500 hover:text-white border border-white/[0.07]">
+                <button onClick={() => setIsModalOpen(false)} className="p-3 bg-zinc-100 dark:bg-white/[0.05] rounded-2xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-white/[0.07]">
                   <X size={20} />
                 </button>
               </div>
 
               <form onSubmit={handleAddSubject} className="space-y-5">
                 <div>
-                  <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-2">Subject Name</label>
+                  <label className="text-[10px] font-black text-zinc-500 dark:text-zinc-500 uppercase tracking-widest block mb-2">Subject Name</label>
                   <input
                     type="text" required
                     value={formData.name}
                     onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
                     placeholder="e.g. Data Structures"
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-violet-500/50 placeholder:text-gray-800 transition-all"
+                    className="w-full bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] rounded-2xl px-5 py-3.5 text-zinc-900 dark:text-white font-bold outline-none focus:border-emerald-500/50 placeholder:text-zinc-400 dark:placeholder:text-zinc-800 transition-all"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-2">Credits</label>
+                    <label className="text-[10px] font-black text-zinc-500 dark:text-zinc-500 uppercase tracking-widest block mb-2">Credits</label>
                     <input type="number" min="1" max="10"
                       value={formData.credits}
                       onChange={e => setFormData(p => ({ ...p, credits: e.target.value }))}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-violet-500/50 transition-all"
+                      className="w-full bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] rounded-2xl px-5 py-3.5 text-zinc-900 dark:text-white font-bold outline-none focus:border-emerald-500/50 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-2">Threshold %</label>
+                    <label className="text-[10px] font-black text-zinc-500 dark:text-zinc-500 uppercase tracking-widest block mb-2">Threshold %</label>
                     <input type="number" min="1" max="100"
                       value={formData.threshold}
                       onChange={e => setFormData(p => ({ ...p, threshold: e.target.value }))}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-violet-500/50 transition-all"
+                      className="w-full bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] rounded-2xl px-5 py-3.5 text-zinc-900 dark:text-white font-bold outline-none focus:border-emerald-500/50 transition-all"
                     />
                   </div>
                 </div>
 
                 {semesters && semesters.length > 1 && (
                   <div>
-                    <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-2">Semester</label>
+                    <label className="text-[10px] font-black text-zinc-500 dark:text-zinc-500 uppercase tracking-widest block mb-2">Semester</label>
                     <select
                       value={formData.semesterId}
                       onChange={e => setFormData(p => ({ ...p, semesterId: e.target.value }))}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 text-white font-bold outline-none focus:border-violet-500/50 transition-all"
+                      className="w-full bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] rounded-2xl px-5 py-3.5 text-zinc-900 dark:text-white font-bold outline-none focus:border-emerald-500/50 transition-all"
                     >
                       {semesters.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
@@ -405,30 +405,30 @@ export default function Subjects() {
                 {/* Mid-term starter — prominent section */}
                 <div className="bg-orange-500/[0.06] border border-orange-500/20 rounded-2xl p-5 space-y-4">
                   <div>
-                    <p className="text-[10px] font-black text-orange-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                    <p className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
                       <Zap size={10} /> Mid-Semester Starter
                     </p>
-                    <p className="text-[10px] text-gray-600 mt-1">Already attended some classes? Enter your current counts below so your percentage is accurate from day one.</p>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-600 mt-1">Already attended some classes? Enter your current counts below so your percentage is accurate from day one.</p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Classes Attended So Far</label>
+                      <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-1.5">Classes Attended So Far</label>
                       <input
                         type="number" min="0"
                         value={formData.initialAttended}
                         onChange={e => setFormData(p => ({ ...p, initialAttended: e.target.value }))}
                         placeholder="0"
-                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-white font-bold outline-none focus:border-orange-500/40 transition-all"
+                        className="w-full bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-zinc-900 dark:text-white font-bold outline-none focus:border-orange-500/40 transition-all"
                       />
                     </div>
                     <div>
-                      <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Total Classes Held So Far</label>
+                      <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-1.5">Total Classes Held So Far</label>
                       <input
                         type="number" min="0"
                         value={formData.initialTotal}
                         onChange={e => setFormData(p => ({ ...p, initialTotal: e.target.value }))}
                         placeholder="0"
-                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-white font-bold outline-none focus:border-orange-500/40 transition-all"
+                        className="w-full bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-zinc-900 dark:text-white font-bold outline-none focus:border-orange-500/40 transition-all"
                       />
                     </div>
                   </div>

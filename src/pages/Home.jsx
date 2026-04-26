@@ -218,8 +218,8 @@ export default function Home() {
         </div>
 
         {!todayTimetable || todayTimetable.length === 0 ? (
-          <div className="text-center py-16 bg-white/[0.02] rounded-[2rem] border-2 border-dashed border-white/[0.06]">
-            <div className="w-14 h-14 bg-white/[0.04] rounded-3xl flex items-center justify-center mx-auto mb-4">
+          <div className="text-center py-16 bg-zinc-50 dark:bg-white/[0.02] rounded-[2rem] border-2 border-dashed border-zinc-200 dark:border-white/[0.06]">
+            <div className="w-14 h-14 bg-zinc-100 dark:bg-white/[0.04] rounded-3xl flex items-center justify-center mx-auto mb-4">
               <Zap size={22} className="text-gray-700" />
             </div>
             <p className="text-gray-500 text-sm font-black uppercase tracking-wider">No classes today!</p>
@@ -260,13 +260,13 @@ export default function Home() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-zinc-900 dark:text-white font-black text-lg tracking-tight">{pct}%</p>
+                        <p className="text-zinc-900 dark:text-zinc-100 font-black text-lg tracking-tight">{pct}%</p>
                         <p className="text-zinc-500 dark:text-zinc-500 text-[9px] font-bold uppercase tracking-widest">{sub.attendedClasses}/{sub.totalClasses}</p>
                       </div>
                     </div>
 
                     {/* Progress bar */}
-                    <div className="h-1 bg-zinc-200 dark:bg-white/[0.05] rounded-full mb-5 overflow-hidden">
+                    <div className="h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full mb-5 overflow-hidden">
                       <div
                         className={clsx('h-full rounded-full transition-all', pct >= sub.threshold ? 'bg-emerald-500' : 'bg-red-500')}
                         style={{ width: `${Math.min(pct, 100)}%` }}
@@ -279,7 +279,7 @@ export default function Home() {
                         { id: 'present', icon: CheckCircle2, label: 'Present', active: 'bg-green-600 border-green-500 text-white shadow-lg shadow-green-500/20' },
                         { id: 'absent', icon: XCircle, label: 'Absent', active: 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-500/20' },
                         { id: 'cancelled', icon: Slash, label: 'Off', active: 'bg-gray-600 border-gray-500 text-white' },
-                        { id: 'reset', icon: RotateCcw, label: 'Reset', active: 'bg-white/10 border-white/20 text-white' },
+                        { id: 'reset', icon: RotateCcw, label: 'Reset', active: 'bg-zinc-200 dark:bg-white/10 border-zinc-300 dark:border-white/20 text-zinc-900 dark:text-white' },
                       ].map(action => (
                         <motion.button
                           key={action.id}

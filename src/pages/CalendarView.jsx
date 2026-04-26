@@ -283,16 +283,16 @@ export default function CalendarView() {
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a] rounded-t-[3rem] border-t border-white/[0.08] max-h-[85vh] overflow-y-auto scrollbar-hide"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-zinc-950 rounded-t-[3rem] border-t border-zinc-200 dark:border-white/[0.08] max-h-[85vh] overflow-y-auto scrollbar-hide"
             >
               <div className="pt-4 pb-1 flex justify-center">
-                <div className="w-12 h-1.5 bg-white/10 rounded-full" />
+                <div className="w-12 h-1.5 bg-zinc-200 dark:bg-white/10 rounded-full" />
               </div>
 
               <div className="flex items-center justify-between px-8 py-4">
                 <div>
-                  <h3 className="text-2xl font-black text-white tracking-tighter uppercase">{format(selectedDate, 'EEEE')}</h3>
-                  <p className="text-violet-400/70 text-[10px] font-black uppercase tracking-widest mt-1">{format(selectedDate, 'do MMMM, yyyy')}</p>
+                  <h3 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase">{format(selectedDate, 'EEEE')}</h3>
+                  <p className="text-emerald-600 dark:text-emerald-400/70 text-[10px] font-black uppercase tracking-widest mt-1">{format(selectedDate, 'do MMMM, yyyy')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {scheduledSlots.length > 0 && (
@@ -302,14 +302,14 @@ export default function CalendarView() {
                         'flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-widest border transition-all',
                         isHoliday
                           ? 'bg-orange-500/20 border-orange-500/30 text-orange-400'
-                          : 'bg-white/[0.04] border-white/[0.08] text-gray-500 hover:text-orange-400'
+                          : 'bg-zinc-100 dark:bg-white/[0.04] border-zinc-200 dark:border-white/[0.08] text-zinc-500 hover:text-orange-600'
                       )}
                     >
                       🏖️ Holiday
                     </motion.button>
                   )}
                   <button onClick={() => setSelectedDate(null)}
-                    className="p-2.5 bg-white/[0.05] rounded-2xl border border-white/[0.07] text-gray-500 hover:text-white transition-colors">
+                    className="p-2.5 bg-zinc-100 dark:bg-white/[0.05] rounded-2xl border border-zinc-200 dark:border-white/[0.07] text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
                     <X size={18} />
                   </button>
                 </div>
@@ -330,18 +330,18 @@ export default function CalendarView() {
                       const pct = sub.totalClasses === 0 ? 0 : Math.round((sub.attendedClasses / sub.totalClasses) * 100);
 
                       return (
-                        <div key={slot.id} className="bg-white/[0.04] border border-white/[0.07] rounded-3xl p-5">
+                        <div key={slot.id} className="bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.07] rounded-3xl p-5">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <p className="text-white font-black text-base tracking-tight">{sub.name}</p>
-                              <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest mt-0.5">{pct}% overall • {sub.attendedClasses}/{sub.totalClasses}</p>
+                              <p className="text-zinc-900 dark:text-white font-black text-base tracking-tight">{sub.name}</p>
+                              <p className="text-zinc-500 dark:text-zinc-600 text-[10px] font-bold uppercase tracking-widest mt-0.5">{pct}% overall • {sub.attendedClasses}/{sub.totalClasses}</p>
                             </div>
                             {record && (
                               <span className={clsx(
                                 'text-[10px] font-black uppercase px-3 py-1 rounded-full border',
                                 record.status === 'present' ? 'text-green-400 bg-green-500/10 border-green-500/20' :
                                 record.status === 'absent' ? 'text-red-400 bg-red-500/10 border-red-500/20' :
-                                'text-gray-500 bg-white/[0.04] border-white/[0.07]'
+                                'text-zinc-500 dark:text-gray-500 bg-zinc-100 dark:bg-white/[0.04] border-zinc-200 dark:border-white/[0.07]'
                               )}>
                                 {record.status}
                               </span>
@@ -353,7 +353,7 @@ export default function CalendarView() {
                               { status: 'present', icon: CheckCircle2, label: 'P', activeClass: 'bg-green-600 border-green-500 text-white shadow-lg shadow-green-500/20' },
                               { status: 'absent', icon: XCircle, label: 'A', activeClass: 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-500/20' },
                               { status: 'cancelled', icon: Slash, label: 'Off', activeClass: 'bg-gray-600 border-gray-500 text-white' },
-                              { status: 'reset', icon: RotateCcw, label: 'Undo', activeClass: 'bg-white/10 border-white/20 text-white' },
+                              { status: 'reset', icon: RotateCcw, label: 'Undo', activeClass: 'bg-zinc-200 dark:bg-white/10 border-zinc-300 dark:border-white/20 text-zinc-900 dark:text-white' },
                             ].map(action => {
                               const isActive = record?.status === action.status;
                               const Icon = action.icon;
@@ -364,7 +364,7 @@ export default function CalendarView() {
                                     'flex flex-col items-center gap-1 py-3 rounded-2xl border-2 text-xs font-black uppercase tracking-tight transition-all',
                                     isActive
                                       ? action.activeClass
-                                      : 'bg-white/[0.03] border-white/[0.07] text-gray-600 hover:text-gray-300 hover:bg-white/[0.06]'
+                                      : 'bg-white dark:bg-white/[0.03] border-zinc-200 dark:border-white/[0.07] text-zinc-500 dark:text-gray-600 hover:text-zinc-900 dark:hover:text-zinc-300 dark:hover:bg-white/[0.06]'
                                   )}
                                 >
                                   <Icon size={16} strokeWidth={isActive ? 2.5 : 1.8} />
