@@ -45,14 +45,21 @@ export default function Layout() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
+    const syncTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    syncTheme();
+
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   const toggleTheme = () => {
-    const newDark = !isDark;
-    setIsDark(newDark);
-    document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', newDark ? 'dark' : 'light');
+    const isNowDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
   };
 
   // Get page title for mobile header
