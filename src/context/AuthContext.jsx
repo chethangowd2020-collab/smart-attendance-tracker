@@ -61,9 +61,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      // Initialize local settings with profile info
-      await db.settings.put({
-        id: 1,
+      // Update local settings with profile info without wiping out defaults
+      const existingSettings = await db.settings.get(1);
+      const settingsData = {
         profile: {
           name: profileData.name || '',
           usn: profileData.usn || '',
@@ -72,7 +72,22 @@ export const AuthProvider = ({ children }) => {
         },
         notifications: { lowAttendanceAlert: true, dailyReminder: true },
         defaultThreshold: 75
-      });
+      };
+
+      if (existingSettings) {
+        await db.settings.update(1, settingsData);
+      } else {
+        await db.settings.add({ id: 1, ...settingsData, gradingScale: [
+          { min: 90, max: 100, point: 10, grade: 'O' },
+          { min: 80, max: 89, point: 9, grade: 'A+' },
+          { min: 70, max: 79, point: 8, grade: 'A' },
+          { min: 60, max: 69, point: 7, grade: 'B+' },
+          { min: 55, max: 59, point: 6, grade: 'B' },
+          { min: 50, max: 54, point: 5, grade: 'C' },
+          { min: 45, max: 49, point: 4, grade: 'P' },
+          { min: 0, max: 44, point: 0, grade: 'F' }
+        ]});
+      }
       
       toast.success('Account created!');
       return true;

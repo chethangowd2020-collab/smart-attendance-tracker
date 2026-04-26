@@ -1,6 +1,8 @@
 // Grade calculation based on provided scale
 export const calculateGrade = (totalMarks, scale) => {
   if (totalMarks === undefined || totalMarks === null) return null;
+  if (!scale || scale.length === 0) return { grade: 'N/A', point: 0 };
+
   // Sort scale descending by min value to easily find the grade
   const sortedScale = [...scale].sort((a, b) => b.min - a.min);
   for (const range of sortedScale) {
@@ -8,7 +10,7 @@ export const calculateGrade = (totalMarks, scale) => {
       return range;
     }
   }
-  return scale[scale.length - 1]; // return lowest if not found
+  return scale[scale.length - 1] || { grade: 'F', point: 0 }; // return lowest if not found
 };
 
 export const calculateSubjectTotal = (subjectMarks) => {
