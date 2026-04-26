@@ -20,7 +20,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-white dark:bg-[#020617] flex flex-col items-center justify-center px-6 relative overflow-hidden font-sans transition-colors duration-300">
       {/* Background Orbs */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-emerald-500/5 blur-[120px] rounded-full animate-pulse" />
@@ -36,16 +36,16 @@ export default function Login() {
           <motion.div 
             initial={{ y: -20 }}
             animate={{ y: 0 }}
-            className="w-16 h-16 bg-emerald-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-600/40 mb-6"
+            className="w-16 h-16 bg-emerald-600 rounded-3xl flex items-center justify-center shadow-xl shadow-emerald-600/20 mb-6"
           >
             <GraduationCap className="text-white" size={32} />
           </motion.div>
-          <h1 className="text-5xl font-black text-zinc-900 tracking-tighter mb-2 text-center">TRACKIFY</h1>
+          <h1 className="text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-2 text-center">TRACKIFY</h1>
           <p className="text-zinc-500 font-black text-[10px] uppercase tracking-[0.4em] text-center">Your Academic Identity</p>
         </div>
 
-        <div className="bg-zinc-50 p-10 rounded-[3.5rem] border border-zinc-200 shadow-2xl relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-zinc-100 to-transparent rounded-[3.5rem] pointer-events-none" />
+        <div className="bg-zinc-50 dark:bg-white/[0.02] p-10 rounded-[3.5rem] border border-zinc-200 dark:border-white/5 shadow-2xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-100/50 dark:from-white/[0.02] to-transparent pointer-events-none" />
           
           <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
             <div className="space-y-2">
@@ -56,7 +56,7 @@ export default function Login() {
                   type="email" required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white border border-zinc-200 rounded-2xl p-5 pl-14 text-zinc-900 focus:ring-2 focus:ring-emerald-500/50 outline-none font-bold transition-all placeholder:text-zinc-400"
+                  className="w-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/10 rounded-2xl p-5 pl-14 text-zinc-900 dark:text-white focus:ring-2 focus:ring-emerald-500/50 outline-none font-bold transition-all placeholder:text-zinc-400"
                   placeholder="name@university.com"
                 />
               </div>
@@ -70,7 +70,7 @@ export default function Login() {
                   type="password" required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white border border-zinc-200 rounded-2xl p-5 pl-14 text-zinc-900 focus:ring-2 focus:ring-emerald-500/50 outline-none font-bold transition-all placeholder:text-zinc-400"
+                  className="w-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/10 rounded-2xl p-5 pl-14 text-zinc-900 dark:text-white focus:ring-2 focus:ring-emerald-500/50 outline-none font-bold transition-all placeholder:text-zinc-400"
                   placeholder="••••••••"
                 />
               </div>
@@ -88,9 +88,9 @@ export default function Login() {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-gray-500 font-bold text-sm tracking-tight">
+          <p className="text-zinc-500 font-bold text-sm tracking-tight">
             New to Trackify? 
-            <Link to="/register" className="text-white ml-2 hover:text-emerald-400 transition-colors inline-flex items-center gap-2 group">
+            <Link to="/register" className="text-zinc-900 dark:text-white ml-2 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors inline-flex items-center gap-2 group underline underline-offset-4 decoration-emerald-500/30">
               Create an account <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </p>

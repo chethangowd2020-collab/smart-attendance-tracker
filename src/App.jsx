@@ -13,7 +13,11 @@ import Register from './pages/Register';
 
 function ProtectedRoute({ children }) {
   const { token, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-h-screen bg-white dark:bg-[#020617] flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+    </div>
+  );
   if (!token) return <Navigate to="/login" />;
   return children;
 }
