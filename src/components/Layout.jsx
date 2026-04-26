@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, BookOpen, Calendar, GraduationCap, Settings, History, Zap, User } from 'lucide-react';
+import { Home, BookOpen, Calendar, Settings, History, Zap, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import clsx from 'clsx';
@@ -10,7 +10,6 @@ const sidebarItems = [
   { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/subjects', label: 'Subjects', icon: BookOpen },
   { path: '/history', label: 'History', icon: History },
-  { path: '/academics', label: 'Academics', icon: GraduationCap },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -19,7 +18,6 @@ const mobileNavItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/subjects', label: 'Subjects', icon: BookOpen },
-  { path: '/academics', label: 'Grades', icon: GraduationCap },
   { path: '/settings', label: 'Profile', icon: User },
 ];
 
@@ -50,7 +48,6 @@ export default function Layout() {
     '/subjects': 'Subjects',
     '/calendar': 'Calendar',
     '/history': 'History',
-    '/academics': 'Academics',
     '/settings': 'Profile',
   };
   const currentLabel = pageLabels[location.pathname] || 'Trackify';
