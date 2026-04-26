@@ -197,10 +197,10 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Clock size={14} className="text-emerald-500" />
-            <p className="text-[11px] font-black text-gray-500 uppercase tracking-[0.2em]">Today's Classes</p>
+            <p className="text-[11px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em]">Today's Classes</p>
           </div>
-          <div className="bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.06]">
-            <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">{todayTimetable?.length || 0} Scheduled</span>
+          <div className="bg-zinc-100 dark:bg-white/[0.04] px-3 py-1 rounded-full border border-zinc-200 dark:border-white/[0.06]">
+            <span className="text-[9px] font-black text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">{todayTimetable?.length || 0} Scheduled</span>
           </div>
         </div>
 
@@ -222,7 +222,7 @@ export default function Home() {
               const pct = sub.totalClasses === 0 ? 0 : Math.round((sub.attendedClasses / sub.totalClasses) * 100);
 
               return (
-                <motion.div layout key={slot.id} className="bg-white/[0.03] border border-white/[0.06] rounded-[2rem] overflow-hidden">
+                <motion.div layout key={slot.id} className="bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] rounded-[2rem] overflow-hidden shadow-sm">
                   <div className="p-6">
                     {/* Subject header */}
                     <div className="flex items-center justify-between mb-5">
@@ -231,12 +231,12 @@ export default function Home() {
                           'w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base border-2 transition-all',
                           record?.status === 'present' ? 'bg-green-500/20 border-green-500/40 text-green-400 shadow-lg shadow-green-500/10' :
                           record?.status === 'absent' ? 'bg-red-500/20 border-red-500/40 text-red-400 shadow-lg shadow-red-500/10' :
-                          'bg-white/[0.05] border-white/10 text-gray-500'
+                          'bg-zinc-100 dark:bg-white/[0.05] border-zinc-200 dark:border-white/10 text-zinc-400'
                         )}>
                           {index + 1}
                         </div>
                         <div>
-                          <h3 className="text-base font-black text-white tracking-tight">{sub.name}</h3>
+                          <h3 className="text-base font-black text-zinc-900 dark:text-white tracking-tight">{sub.name}</h3>
                           <div className={clsx(
                             'flex items-center gap-1 text-[10px] font-bold mt-0.5',
                             advice.type === 'danger' ? 'text-red-400' : 'text-emerald-400'
@@ -247,13 +247,13 @@ export default function Home() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-white font-black text-lg tracking-tight">{pct}%</p>
-                        <p className="text-gray-600 text-[9px] font-bold uppercase tracking-widest">{sub.attendedClasses}/{sub.totalClasses}</p>
+                        <p className="text-zinc-900 dark:text-white font-black text-lg tracking-tight">{pct}%</p>
+                        <p className="text-zinc-500 dark:text-zinc-500 text-[9px] font-bold uppercase tracking-widest">{sub.attendedClasses}/{sub.totalClasses}</p>
                       </div>
                     </div>
 
                     {/* Progress bar */}
-                    <div className="h-1 bg-white/[0.05] rounded-full mb-5 overflow-hidden">
+                    <div className="h-1 bg-zinc-200 dark:bg-white/[0.05] rounded-full mb-5 overflow-hidden">
                       <div
                         className={clsx('h-full rounded-full transition-all', pct >= sub.threshold ? 'bg-emerald-500' : 'bg-red-500')}
                         style={{ width: `${Math.min(pct, 100)}%` }}
@@ -276,7 +276,7 @@ export default function Home() {
                             'flex flex-col items-center py-3 rounded-2xl border-2 text-xs font-black uppercase tracking-tight transition-all gap-1',
                             record?.status === action.id
                               ? action.active
-                              : 'bg-white/[0.03] border-white/[0.07] text-gray-600 hover:text-gray-300 hover:bg-white/[0.06]'
+                              : 'bg-zinc-100 dark:bg-white/[0.03] border-zinc-200 dark:border-white/[0.07] text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'
                           )}
                         >
                           <action.icon size={18} strokeWidth={2.5} />
@@ -297,20 +297,20 @@ export default function Home() {
         <motion.section variants={item} className="space-y-3">
           <div className="flex items-center gap-2">
             <History size={14} className="text-purple-500" />
-            <p className="text-[11px] font-black text-gray-500 uppercase tracking-[0.2em]">Recent Activity</p>
+            <p className="text-[11px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em]">Recent Activity</p>
           </div>
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-[2rem] divide-y divide-white/[0.04]">
+          <div className="bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] rounded-[2rem] divide-y divide-zinc-200 dark:divide-white/[0.04] overflow-hidden">
             {allRecords.slice(0, 5).map(rec => {
               const sub = subjects?.find(s => s.id === rec.subjectId);
               return (
                 <div key={rec.id} className="flex items-center justify-between px-5 py-3.5">
                   <div className="flex items-center gap-3">
                     <div className={clsx('w-2 h-2 rounded-full shrink-0',
-                      rec.status === 'present' ? 'bg-green-500' : rec.status === 'absent' ? 'bg-red-500' : 'bg-gray-600'
+                      rec.status === 'present' ? 'bg-green-500' : rec.status === 'absent' ? 'bg-red-500' : 'bg-zinc-400'
                     )} />
                     <div>
-                      <p className="text-sm font-bold text-white">{sub?.name || 'Unknown'}</p>
-                      <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{format(new Date(rec.date), 'MMM d, yyyy')}</p>
+                      <p className="text-sm font-bold text-zinc-900 dark:text-white">{sub?.name || 'Unknown'}</p>
+                      <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">{format(new Date(rec.date), 'MMM d, yyyy')}</p>
                     </div>
                   </div>
                   <span className={clsx('text-[10px] font-black uppercase px-2.5 py-1 rounded-full',

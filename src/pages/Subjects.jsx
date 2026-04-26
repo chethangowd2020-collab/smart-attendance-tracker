@@ -100,20 +100,20 @@ export default function Subjects() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32 bg-white dark:bg-[#020617] transition-colors">
 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tighter">Subjects</h1>
-          <p className="text-gray-500 text-xs font-semibold mt-0.5 uppercase tracking-widest">Manage Curriculum</p>
+          <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">Subjects</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold mt-0.5 uppercase tracking-widest">Manage Curriculum</p>
         </div>
         {activeTab === 'subjects' && (
           <motion.button
             whileHover={{ scale: 1.08, rotate: 90 }}
             whileTap={{ scale: 0.92 }}
             onClick={handleOpenModal}
-            className="w-12 h-12 bg-violet-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-violet-600/30 text-white"
+            className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-600/30 text-white"
           >
             <Plus size={28} strokeWidth={2.5} />
           </motion.button>
@@ -121,7 +121,7 @@ export default function Subjects() {
       </div>
 
       {/* Tab switcher */}
-      <div className="flex p-1.5 bg-white/[0.04] border border-white/[0.07] rounded-2xl">
+      <div className="flex p-1.5 bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.07] rounded-2xl">
         {[
           { id: 'subjects', label: 'Subjects', icon: BookOpen },
           { id: 'timetable', label: 'Schedule', icon: Calendar },
@@ -132,8 +132,8 @@ export default function Subjects() {
             className={clsx(
               'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all',
               activeTab === tab.id
-                ? 'bg-violet-600 text-white shadow-xl shadow-violet-600/20'
-                : 'text-gray-600 hover:text-gray-300'
+                ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-600/20'
+                : 'text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'
             )}
           >
             <tab.icon size={14} />
