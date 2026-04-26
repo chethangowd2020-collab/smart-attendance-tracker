@@ -134,7 +134,7 @@ export default function Academics() {
       <header className="flex items-center justify-between px-3">
         <div>
           <h1 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter mb-1">PERFORMANCE</h1>
-          <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.3em]">Academic Analytics</p>
+          <p className="text-zinc-500 dark:text-zinc-400 font-black text-[10px] uppercase tracking-[0.3em] transition-colors">Academic Analytics</p>
         </div>
         <div className="flex gap-3">
           <motion.button 
@@ -142,7 +142,7 @@ export default function Academics() {
             whileTap={{ scale: 0.95 }}
             onClick={handleExportPDF}
             disabled={isExporting || !semesters?.length}
-            className="w-14 h-14 glass-card rounded-[1.5rem] flex items-center justify-center text-violet-400 border border-white/5 active:bg-violet-600 active:text-white transition-all disabled:opacity-20"
+            className="w-14 h-14 glass-card rounded-[1.5rem] flex items-center justify-center text-purple-600 dark:text-purple-400 border border-zinc-200 dark:border-white/5 active:bg-purple-600 active:text-white transition-all disabled:opacity-20"
           >
             <Download size={22} />
           </motion.button>
@@ -179,7 +179,7 @@ export default function Academics() {
                   >
                     {sem.name}
                     {activeSemesterId === sem.id && (
-                      <motion.div layoutId="sem-pill" className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-violet-600 rounded-full" />
+                      <motion.div layoutId="sem-pill" className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-emerald-600 rounded-full" />
                     )}
                   </button>
                   {activeSemesterId === sem.id && (
@@ -208,7 +208,7 @@ export default function Academics() {
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-violet-600/10 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-violet-600/20 transition-all duration-700" />
             <div className="relative z-10 flex flex-col items-center">
-              <Star className="text-violet-500/30 mb-4" size={24} />
+              <Star className="text-purple-500/40 mb-4" size={24} />
               <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Aggregate CGPA</p>
               <p className="text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">{cgpa}</p>
             </div>
@@ -250,10 +250,10 @@ export default function Academics() {
                 className="text-center py-24 glass-card rounded-[4rem] border-2 border-dashed border-white/5"
               >
                 <div className="bg-white/5 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
-                  <GraduationCap size={40} className="text-gray-800" />
+                  <GraduationCap size={40} className="text-zinc-400 dark:text-zinc-600" />
                 </div>
-                <p className="text-gray-600 text-sm font-black uppercase tracking-[0.2em]">Academic Vault Empty</p>
-                <p className="text-gray-800 text-[10px] font-bold mt-2 uppercase">Define courses in curriculum first</p>
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm font-black uppercase tracking-[0.2em]">Academic Vault Empty</p>
+                <p className="text-zinc-800 dark:text-zinc-300 text-[10px] font-bold mt-2 uppercase">Define courses in curriculum first</p>
               </motion.div>
             ) : (
               activeSubjects.map((sub, index) => {
@@ -279,7 +279,7 @@ export default function Academics() {
                         <div className={clsx(
                           "w-16 h-16 rounded-[1.5rem] flex items-center justify-center font-black text-xl border-2 shrink-0 transition-all duration-500",
                           total >= 40 
-                            ? "bg-violet-600/10 border-violet-600/30 text-violet-400 shadow-xl shadow-violet-600/10" 
+                            ? "bg-purple-600/10 border-purple-600/30 text-purple-600 dark:text-purple-400 shadow-xl shadow-purple-600/10" 
                             : "bg-red-600/10 border-red-600/30 text-red-400 shadow-xl shadow-red-600/10"
                         )}>
                           {grade?.grade || 'F'}
@@ -293,7 +293,7 @@ export default function Academics() {
                             <span className="w-1 h-1 bg-gray-800 rounded-full" />
                             <span className={clsx(
                               "text-[9px] font-black uppercase tracking-widest",
-                              total >= 40 ? "text-violet-500" : "text-red-500"
+                              total >= 40 ? "text-purple-600 dark:text-purple-400" : "text-red-600 dark:text-red-500"
                             )}>
                               {total >= 40 ? 'Passing' : 'Critical'}
                             </span>
@@ -351,7 +351,7 @@ export default function Academics() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Star size={12} className="text-yellow-500/50" />
-                              <span>Computed Grade: <span className="text-white ml-1">{grade?.grade || 'N/A'}</span></span>
+                              <span>Computed Grade: <span className="text-zinc-900 dark:text-white ml-1">{grade?.grade || 'N/A'}</span></span>
                             </div>
                           </div>
                         </motion.div>

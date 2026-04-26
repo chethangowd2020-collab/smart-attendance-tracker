@@ -189,8 +189,8 @@ export default function CalendarView() {
         {/* Month stats */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: 'Present', value: monthStats.present, color: 'text-green-400' },
-            { label: 'Absent', value: monthStats.absent, color: 'text-red-400' },
+            { label: 'Present', value: monthStats.present, color: 'text-green-600 dark:text-green-400' },
+            { label: 'Absent', value: monthStats.absent, color: 'text-red-600 dark:text-red-400' },
             { label: 'Holiday', value: monthStats.cancelled, color: 'text-gray-500' },
             { label: 'Rate', value: `${monthStats.pct}%`, color: monthStats.pct >= 75 ? 'text-emerald-500' : 'text-red-400' },
           ].map(s => (
@@ -339,8 +339,8 @@ export default function CalendarView() {
                             {record && (
                               <span className={clsx(
                                 'text-[10px] font-black uppercase px-3 py-1 rounded-full border',
-                                record.status === 'present' ? 'text-green-400 bg-green-500/10 border-green-500/20' :
-                                record.status === 'absent' ? 'text-red-400 bg-red-500/10 border-red-500/20' :
+                                record.status === 'present' ? 'text-green-600 dark:text-green-400 bg-green-500/10 border-green-500/20' :
+                                record.status === 'absent' ? 'text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20' :
                                 'text-zinc-500 dark:text-gray-500 bg-zinc-100 dark:bg-white/[0.04] border-zinc-200 dark:border-white/[0.07]'
                               )}>
                                 {record.status}

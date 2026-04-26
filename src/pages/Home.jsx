@@ -242,8 +242,8 @@ export default function Home() {
                       <div className="flex items-center gap-4">
                         <div className={clsx(
                           'w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base border-2 transition-all',
-                          record?.status === 'present' ? 'bg-green-500/20 border-green-500/40 text-green-400 shadow-lg shadow-green-500/10' :
-                          record?.status === 'absent' ? 'bg-red-500/20 border-red-500/40 text-red-400 shadow-lg shadow-red-500/10' :
+                          record?.status === 'present' ? 'bg-green-500/20 border-green-500/40 text-green-600 dark:text-green-400 shadow-lg shadow-green-500/10' :
+                          record?.status === 'absent' ? 'bg-red-500/20 border-red-500/40 text-red-600 dark:text-red-400 shadow-lg shadow-red-500/10' :
                           'bg-zinc-100 dark:bg-white/[0.05] border-zinc-200 dark:border-white/10 text-zinc-400'
                         )}>
                           {index + 1}
@@ -326,9 +326,9 @@ export default function Home() {
                       <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">{format(new Date(rec.date), 'MMM d, yyyy')}</p>
                     </div>
                   </div>
-                  <span className={clsx('text-[10px] font-black uppercase px-2.5 py-1 rounded-full',
-                    rec.status === 'present' ? 'text-green-400 bg-green-500/10' :
-                    rec.status === 'absent' ? 'text-red-400 bg-red-500/10' : 'text-gray-500 bg-gray-500/10'
+                  <span className={clsx('text-[10px] font-black uppercase px-2.5 py-1 rounded-full transition-colors',
+                    rec.status === 'present' ? 'text-green-600 dark:text-green-400 bg-green-500/10' :
+                    rec.status === 'absent' ? 'text-red-600 dark:text-red-400 bg-red-500/10' : 'text-gray-500 bg-gray-500/10'
                   )}>
                     {rec.status}
                   </span>

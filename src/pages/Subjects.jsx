@@ -186,9 +186,9 @@ export default function Subjects() {
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-black text-zinc-900 dark:text-white tracking-tight truncate">{sub.name}</h3>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500">{sub.attendedClasses}/{sub.totalClasses} classes</span>
-                          <span className="text-[10px] font-bold text-zinc-300 dark:text-zinc-700">•</span>
-                          <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500">{sub.credits} credits</span>
+                          <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400">{sub.attendedClasses}/{sub.totalClasses} classes</span>
+                          <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-600">•</span>
+                          <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400">{sub.credits} credits</span>
                         </div>
                       </div>
                       {isExpanded ? <ChevronUp size={18} className="text-zinc-400 shrink-0" /> : <ChevronDown size={18} className="text-zinc-400 shrink-0" />}
@@ -205,7 +205,7 @@ export default function Subjects() {
                     {/* Status badge */}
                     <div className={clsx(
                       'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border mt-1',
-                      isSafe ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'
+                      isSafe ? 'bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400'
                     )}>
                       {isSafe ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />}
                       {isSafe
@@ -228,9 +228,9 @@ export default function Subjects() {
                           {/* Stats row */}
                           <div className="grid grid-cols-3 gap-3">
                             {[
-                              { label: 'Attended', value: sub.attendedClasses, color: 'text-green-400' },
+                              { label: 'Attended', value: sub.attendedClasses, color: 'text-green-600 dark:text-green-400' },
                               { label: 'Total', value: sub.totalClasses, color: 'dark:text-white text-zinc-900' },
-                              { label: 'Credits', value: sub.credits, color: 'text-purple-400' },
+                              { label: 'Credits', value: sub.credits, color: 'text-purple-600 dark:text-purple-400' },
                             ].map(s => (
                               <div key={s.label} className="bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] rounded-2xl p-3 text-center">
                                 <p className={clsx('text-xl font-black', s.color)}>{s.value}</p>
@@ -275,7 +275,7 @@ export default function Subjects() {
                           {/* Delete */}
                           <button
                             onClick={() => handleDeleteSubject(sub.id)}
-                            className="w-full py-2.5 border border-red-500/20 text-red-400/70 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 transition-all"
+                            className="w-full py-2.5 border border-red-500/20 text-red-600 dark:text-red-400/70 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all"
                           >
                             Delete Subject
                           </button>
@@ -442,7 +442,7 @@ export default function Subjects() {
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   type="submit"
-                  className="w-full py-4 bg-violet-600 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-2xl shadow-violet-600/30 mt-2"
+                  className="w-full py-4 bg-emerald-600 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-2xl shadow-emerald-600/30 mt-2"
                 >
                   Add Subject
                 </motion.button>

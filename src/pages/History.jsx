@@ -53,8 +53,8 @@ export default function AttendanceHistory() {
   };
 
   const statusConfig = {
-    present: { icon: CheckCircle2, textColor: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', dot: 'bg-green-500' },
-    absent: { icon: XCircle, textColor: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20', dot: 'bg-red-500' },
+    present: { icon: CheckCircle2, textColor: 'text-green-600 dark:text-green-400', bg: 'bg-green-500/10 border-green-500/20', dot: 'bg-green-500' },
+    absent: { icon: XCircle, textColor: 'text-red-600 dark:text-red-400', bg: 'bg-red-500/10 border-red-500/20', dot: 'bg-red-500' },
     cancelled: { icon: Slash, textColor: 'text-gray-500', bg: 'bg-white/[0.04] border-white/[0.07]', dot: 'bg-gray-600' },
   };
 
