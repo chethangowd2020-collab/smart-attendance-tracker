@@ -67,13 +67,13 @@ export default function AttendanceHistory() {
   });
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32 bg-white dark:bg-[#020617] transition-colors">
 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tighter">History</h1>
-          <p className="text-gray-500 text-xs font-semibold mt-0.5 flex items-center gap-1.5 uppercase tracking-widest">
+          <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">History</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold mt-0.5 flex items-center gap-1.5 uppercase tracking-widest">
             <Database size={11} className="text-purple-500" /> {filteredRecords?.length || 0} Records
           </p>
         </div>
@@ -82,8 +82,8 @@ export default function AttendanceHistory() {
           className={clsx(
             'flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs font-black uppercase tracking-widest transition-all',
             showFilter
-              ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/20'
-              : 'bg-white/[0.04] border-white/[0.08] text-gray-600 hover:text-white'
+              ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-600/20'
+              : 'bg-zinc-100 dark:bg-white/[0.04] border-zinc-200 dark:border-white/[0.08] text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10'
           )}
         >
           <Filter size={13} />

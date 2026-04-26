@@ -103,28 +103,28 @@ export default function Register() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Password</label>
+                <label className="block text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest ml-1">Password</label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-white transition-colors" size={18} />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-purple-400 transition-colors" size={18} />
                   <input 
                     type="password" required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-white/20 outline-none font-bold transition-all placeholder:text-gray-700"
+                    className="w-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/10 rounded-2xl p-4 pl-12 text-zinc-900 dark:text-white focus:ring-2 focus:ring-purple-500/50 outline-none font-bold transition-all placeholder:text-zinc-400"
                     placeholder="••••••••"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Confirm</label>
+                <label className="block text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest ml-1">Confirm</label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-white transition-colors" size={18} />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-purple-400 transition-colors" size={18} />
                   <input 
                     type="password" required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-white/20 outline-none font-bold transition-all placeholder:text-gray-700"
+                    className="w-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/10 rounded-2xl p-4 pl-12 text-zinc-900 dark:text-white focus:ring-2 focus:ring-purple-500/50 outline-none font-bold transition-all placeholder:text-zinc-400"
                     placeholder="••••••••"
                   />
                 </div>

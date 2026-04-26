@@ -147,12 +147,12 @@ export default function Subjects() {
         {activeTab === 'subjects' ? (
           <motion.div key="subjects" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
             {!subjects || subjects.length === 0 ? (
-              <div className="text-center py-20 bg-white/[0.02] rounded-[2.5rem] border-2 border-dashed border-white/[0.06]">
-                <div className="w-16 h-16 bg-white/[0.04] rounded-3xl flex items-center justify-center mx-auto mb-5">
-                  <BookOpen size={28} className="text-gray-700" />
+              <div className="text-center py-20 bg-zinc-50 dark:bg-white/[0.02] rounded-[2.5rem] border-2 border-dashed border-zinc-200 dark:border-white/5">
+                <div className="w-16 h-16 bg-zinc-100 dark:bg-white/[0.04] rounded-3xl flex items-center justify-center mx-auto mb-5">
+                  <BookOpen size={28} className="text-zinc-400" />
                 </div>
-                <p className="text-gray-500 font-black uppercase tracking-widest text-sm">No subjects yet</p>
-                <button onClick={handleOpenModal} className="mt-5 px-6 py-2.5 bg-violet-600/10 border border-violet-600/20 rounded-full text-violet-400 text-xs font-black uppercase tracking-widest hover:bg-violet-600 hover:text-white transition-all">
+                <p className="text-zinc-500 font-black uppercase tracking-widest text-sm">No subjects yet</p>
+                <button onClick={handleOpenModal} className="mt-5 px-6 py-2.5 bg-emerald-600/10 border border-emerald-600/20 rounded-full text-emerald-600 dark:text-emerald-400 text-xs font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">
                   Add First Subject
                 </button>
               </div>
@@ -164,7 +164,7 @@ export default function Subjects() {
               const needed = !isSafe && sub.totalClasses > 0 ? Math.ceil((sub.threshold * sub.totalClasses - 100 * sub.attendedClasses) / (100 - sub.threshold)) : 0;
 
               return (
-                <motion.div layout key={sub.id} className="bg-white/[0.03] border border-white/[0.06] rounded-[2rem] overflow-hidden">
+                <motion.div layout key={sub.id} className="bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] rounded-[2rem] overflow-hidden shadow-sm">
                   {/* Card header — clickable */}
                   <div
                     className="p-6 cursor-pointer"
@@ -178,26 +178,26 @@ export default function Subjects() {
                       <div className={clsx(
                         'w-14 h-14 rounded-2xl flex items-center justify-center font-black text-base border-2 shrink-0 transition-all',
                         isSafe
-                          ? 'bg-violet-600/10 border-violet-600/30 text-violet-400 shadow-lg shadow-violet-600/10'
+                          ? 'bg-emerald-600/10 border-emerald-600/30 text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-600/10'
                           : 'bg-red-600/10 border-red-600/30 text-red-400 shadow-lg shadow-red-600/10'
                       )}>
                         {Math.round(pct)}%
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-black text-white tracking-tight truncate">{sub.name}</h3>
+                        <h3 className="text-base font-black text-zinc-900 dark:text-white tracking-tight truncate">{sub.name}</h3>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[10px] font-bold text-gray-600">{sub.attendedClasses}/{sub.totalClasses} classes</span>
-                          <span className="text-[10px] font-bold text-gray-700">•</span>
-                          <span className="text-[10px] font-bold text-gray-600">{sub.credits} credits</span>
+                          <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500">{sub.attendedClasses}/{sub.totalClasses} classes</span>
+                          <span className="text-[10px] font-bold text-zinc-300 dark:text-zinc-700">•</span>
+                          <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500">{sub.credits} credits</span>
                         </div>
                       </div>
-                      {isExpanded ? <ChevronUp size={18} className="text-gray-600 shrink-0" /> : <ChevronDown size={18} className="text-gray-600 shrink-0" />}
+                      {isExpanded ? <ChevronUp size={18} className="text-zinc-400 shrink-0" /> : <ChevronDown size={18} className="text-zinc-400 shrink-0" />}
                     </div>
 
                     {/* Progress bar */}
-                    <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden mb-2">
+                    <div className="h-1.5 bg-zinc-200 dark:bg-white/[0.05] rounded-full overflow-hidden mb-2">
                       <div
-                        className={clsx('h-full rounded-full transition-all', isSafe ? 'bg-violet-500' : 'bg-red-500')}
+                        className={clsx('h-full rounded-full transition-all', isSafe ? 'bg-emerald-500' : 'bg-red-500')}
                         style={{ width: `${Math.min(pct, 100)}%` }}
                       />
                     </div>
@@ -229,45 +229,44 @@ export default function Subjects() {
                           <div className="grid grid-cols-3 gap-3">
                             {[
                               { label: 'Attended', value: sub.attendedClasses, color: 'text-green-400' },
-                              { label: 'Total', value: sub.totalClasses, color: 'text-white' },
-                              { label: 'Credits', value: sub.credits, color: 'text-violet-400' },
+                              { label: 'Total', value: sub.totalClasses, color: 'dark:text-white text-zinc-900' },
+                              { label: 'Credits', value: sub.credits, color: 'text-purple-400' },
                             ].map(s => (
-                              <div key={s.label} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-3 text-center">
+                              <div key={s.label} className="bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] rounded-2xl p-3 text-center">
                                 <p className={clsx('text-xl font-black', s.color)}>{s.value}</p>
-                                <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest mt-0.5">{s.label}</p>
+                                <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest mt-0.5">{s.label}</p>
                               </div>
                             ))}
                           </div>
 
-                          {/* Manual adjustment */}
-                          <div className="bg-violet-600/[0.06] border border-violet-600/[0.15] rounded-2xl p-4 space-y-3">
-                            <p className="text-[10px] font-black text-violet-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                          <div className="bg-purple-600/[0.06] border border-purple-600/[0.15] rounded-2xl p-4 space-y-3">
+                            <p className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
                               <Edit2 size={11} /> Manual Adjustment
                             </p>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Classes Attended</label>
+                                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-1.5">Classes Attended</label>
                                 <input
                                   type="number" min="0"
                                   value={manualAttended}
                                   onChange={e => setManualAttended(e.target.value)}
-                                  className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm font-bold outline-none focus:border-violet-500/50 transition-all"
+                                  className="w-full bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-zinc-900 dark:text-white text-sm font-bold outline-none focus:border-purple-500/50 transition-all"
                                 />
                               </div>
                               <div>
-                                <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Total Classes</label>
+                                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-1.5">Total Classes</label>
                                 <input
                                   type="number" min="0"
                                   value={manualTotal}
                                   onChange={e => setManualTotal(e.target.value)}
-                                  className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm font-bold outline-none focus:border-violet-500/50 transition-all"
+                                  className="w-full bg-white dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-zinc-900 dark:text-white text-sm font-bold outline-none focus:border-purple-500/50 transition-all"
                                 />
                               </div>
                             </div>
                             <motion.button
                               whileTap={{ scale: 0.97 }}
                               onClick={() => handleManualUpdate(sub)}
-                              className="w-full py-2.5 bg-violet-600 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-violet-600/20"
+                              className="w-full py-2.5 bg-purple-600 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-purple-600/20"
                             >
                               Save Adjustment
                             </motion.button>

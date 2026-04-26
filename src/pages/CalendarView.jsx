@@ -159,29 +159,29 @@ export default function CalendarView() {
     );
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32 bg-white dark:bg-[#020617] transition-colors">
 
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tighter">Calendar</h1>
-          <p className="text-gray-500 text-xs font-semibold mt-0.5 uppercase tracking-widest">Attendance Log</p>
+          <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">Calendar</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold mt-0.5 uppercase tracking-widest">Attendance Log</p>
         </div>
       </div>
 
       {/* ── Month Navigator + Stats ──── */}
-      <section className="bg-white/[0.03] border border-white/[0.06] rounded-[2.5rem] p-6 space-y-5">
+      <section className="bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] rounded-[2.5rem] p-6 space-y-5">
         <div className="flex items-center justify-between">
           <motion.button whileTap={{ scale: 0.9 }} onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-            className="p-3 bg-white/[0.05] hover:bg-violet-600 hover:text-white rounded-2xl text-violet-400 transition-all border border-white/[0.06]">
+            className="p-3 bg-white dark:bg-white/[0.05] hover:bg-emerald-600 hover:text-white rounded-2xl text-emerald-600 dark:text-emerald-400 transition-all border border-zinc-200 dark:border-white/[0.06] shadow-sm">
             <ChevronLeft size={20} />
           </motion.button>
           <div className="text-center">
-            <h2 className="text-xl font-black text-white uppercase tracking-tighter">{format(currentDate, 'MMMM')}</h2>
-            <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.4em] mt-1">{format(currentDate, 'yyyy')}</p>
+            <h2 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">{format(currentDate, 'MMMM')}</h2>
+            <p className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.4em] mt-1">{format(currentDate, 'yyyy')}</p>
           </div>
           <motion.button whileTap={{ scale: 0.9 }} onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-            className="p-3 bg-white/[0.05] hover:bg-violet-600 hover:text-white rounded-2xl text-violet-400 transition-all border border-white/[0.06]">
+            className="p-3 bg-white dark:bg-white/[0.05] hover:bg-emerald-600 hover:text-white rounded-2xl text-emerald-600 dark:text-emerald-400 transition-all border border-zinc-200 dark:border-white/[0.06] shadow-sm">
             <ChevronRight size={20} />
           </motion.button>
         </div>

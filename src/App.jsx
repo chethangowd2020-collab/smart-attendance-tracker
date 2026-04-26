@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
-import Home from './pages/Home';
-import Subjects from './pages/Subjects';
-import CalendarView from './pages/CalendarView';
-import Settings from './pages/Settings';
-import AttendanceHistory from './pages/History';
-import Login from './pages/Login';
-import Register from './pages/Register';
+
+const Home = lazy(() => import('./pages/Home'));
+const Subjects = lazy(() => import('./pages/Subjects'));
+const CalendarView = lazy(() => import('./pages/CalendarView'));
+const Settings = lazy(() => import('./pages/Settings'));
+const AttendanceHistory = lazy(() => import('./pages/History'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
 
 function ProtectedRoute({ children }) {
   const { token, loading } = useAuth();
@@ -21,6 +22,12 @@ function ProtectedRoute({ children }) {
   if (!token) return <Navigate to="/login" />;
   return children;
 }
+
+const PageLoader = () => (
+  <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="w-8 h-8 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+  </div>
+);
 
 function App() {
   useEffect(() => {
@@ -53,11 +60,11 @@ function App() {
           <Route path="/register" element={<Register />} />
           
           <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route index element={<Home />} />
-            <Route path="subjects" element={<Subjects />} />
-            <Route path="calendar" element={<CalendarView />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="history" element={<AttendanceHistory />} />
+            <Route index element={<Suspense fallback={<PageLoader />}><Home /></Suspense>} />
+            <Route path="subjects" element={<Suspense fallback={<PageLoader />}><Subjects /></Suspense>} />
+            <Route path="calendar" element={<Suspense fallback={<PageLoader />}><CalendarView /></Suspense>} />
+            <Route path="settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+            <Route path="history" element={<Suspense fallback={<PageLoader />}><AttendanceHistory /></Suspense>} />
           </Route>
         </Routes>
       </Router>
