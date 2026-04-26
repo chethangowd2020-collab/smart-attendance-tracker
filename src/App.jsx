@@ -23,9 +23,17 @@ function App() {
     <AuthProvider>
       <Toaster position="top-center" toastOptions={{
         style: {
-          background: '#1f2937',
+          background: 'rgba(0, 0, 0, 0.8)',
           color: '#fff',
-          border: '1px solid #374151',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '1.5rem',
+          padding: '1rem 1.5rem',
+          fontSize: '11px',
+          fontWeight: '900',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
         },
       }} />
       <Router>
