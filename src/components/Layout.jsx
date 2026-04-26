@@ -29,7 +29,7 @@ function NavIcon({ icon: Icon, isActive }) {
         strokeWidth={isActive ? 2.5 : 1.8}
         className={clsx(
           'transition-all duration-200',
-          isActive ? 'text-emerald-400 scale-110' : 'text-zinc-500'
+          isActive ? 'text-emerald-400 scale-110' : 'text-zinc-400'
         )}
         fill={isActive ? 'currentColor' : 'none'}
       />
@@ -113,7 +113,7 @@ export default function Layout() {
             </div>
             <div className="text-left overflow-hidden">
               <p className="text-sm font-semibold text-white truncate">{user?.email?.split('@')[0] || 'User'}</p>
-              <p className="text-xs text-zinc-500 truncate">{user?.email || ''}</p>
+              <p className="text-xs text-zinc-400 truncate">{user?.email || ''}</p>
             </div>
           </button>
         </div>
@@ -137,7 +137,7 @@ export default function Layout() {
                 strokeWidth={1.8}
                 className={clsx(
                   'transition-all',
-                  location.pathname === '/history' ? 'text-emerald-400' : 'text-zinc-500'
+                  location.pathname === '/history' ? 'text-emerald-400' : 'text-zinc-400'
                 )}
               />
             </NavLink>

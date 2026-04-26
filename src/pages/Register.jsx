@@ -30,17 +30,17 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center py-20 px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center py-20 px-6 relative overflow-hidden font-sans">
       {/* Background Orbs */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-violet-600/10 blur-[120px] rounded-full animate-pulse delay-700" />
+        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-emerald-600/10 blur-[120px] rounded-full animate-pulse delay-700" />
       </div>
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-lg z-10"
+        className="w-full max-w-lg z-10 font-sans"
       >
         <div className="flex flex-col items-center mb-10">
           <motion.div 
@@ -54,7 +54,7 @@ export default function Register() {
         </div>
 
         <div className="glass-card p-10 rounded-[3.5rem] border border-white/5 shadow-2xl relative">
-          <div className="absolute inset-0 bg-gradient-to-tr from-purple-600/5 to-blue-600/5 rounded-[3.5rem] pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-purple-600/5 to-emerald-600/5 rounded-[3.5rem] pointer-events-none" />
           
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -88,14 +88,14 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-violet-400 uppercase tracking-widest ml-1">Email Address</label>
+              <label className="block text-[10px] font-black text-emerald-400 uppercase tracking-widest ml-1">Email Address</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-violet-400 transition-colors" size={18} />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-emerald-400 transition-colors" size={18} />
                 <input 
                   type="email" required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-violet-500/50 outline-none font-bold transition-all placeholder:text-gray-700"
+                  className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-4 pl-12 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none font-bold transition-all placeholder:text-gray-700"
                   placeholder="name@university.com"
                 />
               </div>
@@ -134,7 +134,7 @@ export default function Register() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full py-5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-[2.5rem] transition-all font-black uppercase tracking-[0.25em] shadow-2xl shadow-purple-600/30 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 mt-4"
+              className="w-full py-5 bg-gradient-to-r from-purple-600 to-emerald-600 text-white rounded-[2.5rem] transition-all font-black uppercase tracking-[0.25em] shadow-2xl shadow-purple-600/30 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 mt-4"
             >
               {loading ? "Creating Account..." : <><UserPlus size={20} /> Sign Up</>}
             </button>
