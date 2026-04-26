@@ -192,31 +192,31 @@ export default function CalendarView() {
             { label: 'Present', value: monthStats.present, color: 'text-green-400' },
             { label: 'Absent', value: monthStats.absent, color: 'text-red-400' },
             { label: 'Holiday', value: monthStats.cancelled, color: 'text-gray-500' },
-            { label: 'Rate', value: `${monthStats.pct}%`, color: monthStats.pct >= 75 ? 'text-violet-400' : 'text-red-400' },
+            { label: 'Rate', value: `${monthStats.pct}%`, color: monthStats.pct >= 75 ? 'text-emerald-500' : 'text-red-400' },
           ].map(s => (
-            <div key={s.label} className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-3 text-center">
+            <div key={s.label} className="bg-zinc-100 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.05] rounded-2xl p-3 text-center">
               <p className={clsx('font-black text-base', s.color)}>{s.value}</p>
-              <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest mt-0.5">{s.label}</p>
+              <p className="text-[9px] font-black text-zinc-500 dark:text-gray-700 uppercase tracking-widest mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* Progress bar */}
-        <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+        <div className="h-1.5 bg-zinc-200 dark:bg-white/[0.05] rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }} animate={{ width: `${monthStats.pct}%` }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className={clsx('h-full rounded-full shadow-[0_0_12px_rgba(59,130,246,0.4)]', monthStats.pct >= 75 ? 'bg-gradient-to-r from-violet-600 to-fuchsia-400' : 'bg-gradient-to-r from-red-600 to-red-400')}
+            className={clsx('h-full rounded-full shadow-[0_0_12px_rgba(16,185,129,0.2)]', monthStats.pct >= 75 ? 'bg-gradient-to-r from-emerald-500 to-purple-600' : 'bg-gradient-to-r from-red-600 to-red-400')}
           />
         </div>
       </section>
 
       {/* ── Calendar Grid ─── */}
-      <section className="bg-white/[0.03] border border-white/[0.06] rounded-[2.5rem] p-6">
+      <section className="bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] rounded-[2.5rem] p-6 shadow-sm">
         {/* Week headers */}
         <div className="grid grid-cols-7 mb-3">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-            <div key={i} className="text-center text-[10px] font-black text-gray-700 uppercase tracking-widest py-1">{d}</div>
+            <div key={i} className="text-center text-[10px] font-black text-zinc-400 dark:text-gray-700 uppercase tracking-widest py-1">{d}</div>
           ))}
         </div>
 
@@ -241,14 +241,14 @@ export default function CalendarView() {
                 onClick={() => setSelectedDate(day)}
                 className={clsx(
                   'aspect-square flex flex-col items-center justify-center rounded-2xl text-sm font-black transition-all relative',
-                  isT && !isSelected ? 'bg-violet-600 shadow-2xl shadow-violet-600/30 text-white scale-105 z-10' :
-                  isSelected ? 'bg-white text-black shadow-xl' :
-                  'bg-white/[0.03] border border-white/[0.05] text-white hover:bg-white/[0.07]'
+                  isT && !isSelected ? 'bg-emerald-600 shadow-2xl shadow-emerald-600/30 text-white scale-105 z-10' :
+                  isSelected ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xl' :
+                  'bg-white dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.05] text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.07]'
                 )}
               >
                 <span className="text-xs font-black">{format(day, 'd')}</span>
                 <div className="flex gap-0.5 mt-0.5">
-                  {hasPresent && <div className="w-1 h-1 rounded-full bg-violet-400" />}
+                  {hasPresent && <div className="w-1 h-1 rounded-full bg-emerald-400" />}
                   {hasAbsent && <div className="w-1 h-1 rounded-full bg-red-500" />}
                   {hasCancelled && <div className="w-1 h-1 rounded-full bg-gray-500" />}
                 </div>
@@ -260,13 +260,13 @@ export default function CalendarView() {
         {/* Legend */}
         <div className="flex gap-4 mt-5 px-1">
           {[
-            { dot: 'bg-violet-400', label: 'Present' },
+            { dot: 'bg-emerald-400', label: 'Present' },
             { dot: 'bg-red-500', label: 'Absent' },
             { dot: 'bg-gray-500', label: 'Holiday' },
           ].map(l => (
             <div key={l.label} className="flex items-center gap-1.5">
               <div className={clsx('w-2 h-2 rounded-full', l.dot)} />
-              <span className="text-[10px] font-bold text-gray-600">{l.label}</span>
+              <span className="text-[10px] font-bold text-zinc-500 dark:text-gray-600">{l.label}</span>
             </div>
           ))}
         </div>
