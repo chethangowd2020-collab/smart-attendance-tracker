@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, BookOpen, Calendar, Settings, History, Zap, User } from 'lucide-react';
+import { Home, BookOpen, Calendar, Settings, History, Zap, User, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import clsx from 'clsx';
@@ -29,7 +30,7 @@ function NavIcon({ icon: Icon, isActive }) {
         strokeWidth={isActive ? 2.5 : 1.8}
         className={clsx(
           'transition-all duration-200',
-          isActive ? 'text-emerald-400 scale-110' : 'text-zinc-400'
+          isActive ? 'text-emerald-600 scale-110' : 'text-zinc-500'
         )}
         fill={isActive ? 'currentColor' : 'none'}
       />
@@ -41,6 +42,18 @@ export default function Layout() {
   const location = useLocation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+  }, []);
+
+  const toggleTheme = () => {
+    const newDark = !isDark;
+    setIsDark(newDark);
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', newDark ? 'dark' : 'light');
+  };
 
   // Get page title for mobile header
   const pageLabels = {
@@ -53,9 +66,9 @@ export default function Layout() {
   const currentLabel = pageLabels[location.pathname] || 'Trackify';
 
   return (
-    <div className="flex h-screen bg-[#020617] text-white overflow-hidden font-sans">
+    <div className="flex h-screen bg-white dark:bg-[#020617] text-zinc-900 dark:text-zinc-100 overflow-hidden font-sans transition-colors duration-300">
       {/* ── Desktop Sidebar ── */}
-      <aside className="hidden md:flex flex-col w-[244px] lg:w-[280px] border-r border-white/5 bg-zinc-950/50 backdrop-blur-xl h-full shrink-0 overflow-y-auto">
+      <aside className="hidden md:flex flex-col w-[244px] lg:w-[280px] border-r border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950/50 h-full shrink-0 overflow-y-auto">
         {/* Logo */}
         <div className="px-6 py-10">
           <motion.div
@@ -66,7 +79,7 @@ export default function Layout() {
             <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 via-purple-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <Zap size={18} className="text-white" fill="white" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">Trackify</span>
+            <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">Trackify</span>
           </motion.div>
         </div>
 
@@ -82,7 +95,7 @@ export default function Layout() {
                 to={item.path}
                 className={clsx(
                   'flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 group mx-2',
-                  isActive ? 'bg-white/5 text-emerald-400 font-bold shadow-sm' : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                  isActive ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'
                 )}
               >
                 <item.icon
@@ -92,7 +105,7 @@ export default function Layout() {
                   className="transition-all"
                 />
                 <span className={clsx(
-                  'text-[14px] tracking-wide transition-all',
+                  'text-[14px] tracking-wide transition-all uppercase font-black opacity-80 group-hover:opacity-100',
                   isActive ? 'font-semibold' : 'font-medium'
                 )}>
                   {item.label}
@@ -103,33 +116,43 @@ export default function Layout() {
         </nav>
 
         {/* User profile at bottom */}
-        <div className="p-4 border-t border-white/5">
+        <div className="p-4 border-t border-zinc-200 dark:border-white/5 space-y-2">
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-2xl hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-500 dark:text-zinc-400 transition-all text-sm font-bold uppercase tracking-wider"
+          >
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+          </button>
           <button
             onClick={() => navigate('/settings')}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-2xl hover:bg-white/5 transition-all"
+            className="flex items-center gap-3 w-full px-3 py-2 rounded-2xl hover:bg-zinc-100 dark:hover:bg-white/5 transition-all"
           >
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
               {user?.email?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="text-left overflow-hidden">
-              <p className="text-sm font-semibold text-white truncate">{user?.email?.split('@')[0] || 'User'}</p>
-              <p className="text-xs text-zinc-400 truncate">{user?.email || ''}</p>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">{user?.email?.split('@')[0] || 'User'}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{user?.email || ''}</p>
             </div>
           </button>
         </div>
       </aside>
 
       {/* ── Main Content ── */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-[#020617]">
+      <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#020617]">
         {/* Mobile Top Header */}
-        <header className="md:hidden flex items-center justify-between px-4 py-3 border-b border-white/5 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-40">
+        <header className="md:hidden flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-white/5 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-40">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-purple-500 rounded-lg flex items-center justify-center">
               <Zap size={16} className="text-white" fill="white" />
             </div>
-            <span className="text-lg font-bold text-white">{currentLabel}</span>
+            <span className="text-lg font-bold text-zinc-900 dark:text-white">{currentLabel}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button onClick={toggleTheme} className="text-zinc-500 dark:text-zinc-400">
+              {isDark ? <Sun size={22} /> : <Moon size={22} />}
+            </button>
             {/* History shortcut in header on mobile */}
             <NavLink to="/history">
               <History
@@ -137,7 +160,7 @@ export default function Layout() {
                 strokeWidth={1.8}
                 className={clsx(
                   'transition-all',
-                  location.pathname === '/history' ? 'text-emerald-400' : 'text-zinc-400'
+                  location.pathname === '/history' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-400'
                 )}
               />
             </NavLink>
@@ -162,7 +185,7 @@ export default function Layout() {
       </main>
 
       {/* ── Mobile Bottom Nav (Instagram-style) ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-zinc-950/80 backdrop-blur-xl">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200 dark:border-white/5 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl">
         <div className="flex justify-around items-center h-18 px-2">
           {mobileNavItems.map((item) => {
             const isActive = item.path === '/'
@@ -179,7 +202,7 @@ export default function Layout() {
                   <div className={clsx(
                     'w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all',
                     'bg-gradient-to-br from-emerald-500 to-purple-500',
-                    isActive ? 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-zinc-950 scale-110' : 'opacity-80'
+                    isActive ? 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-white dark:ring-offset-[#020617] scale-110' : 'opacity-80'
                   )}>
                     {user?.email?.[0]?.toUpperCase() || 'U'}
                   </div>

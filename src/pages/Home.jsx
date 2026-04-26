@@ -103,19 +103,19 @@ export default function Home() {
   const dayStr = format(today, 'EEEE');
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32 font-sans">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-2xl mx-auto px-4 py-6 pb-32 font-sans bg-white dark:bg-[#020617] transition-colors">
 
       {/* ── Header ────────────────────────────────────────────────── */}
       <motion.div variants={item} className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tighter">Dashboard</h1>
-          <p className="text-gray-500 text-xs font-semibold mt-0.5 flex items-center gap-1.5">
+          <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">Dashboard</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold mt-0.5 flex items-center gap-1.5">
             <Activity size={11} className="text-emerald-500" /> Live Overview
           </p>
         </div>
         <div className="text-right">
-          <p className="text-white font-bold text-sm">{todayStr}</p>
-          <p className="text-gray-600 text-xs font-semibold uppercase tracking-widest">{dayStr}</p>
+          <p className="text-zinc-900 dark:text-zinc-100 font-bold text-sm">{todayStr}</p>
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-widest">{dayStr}</p>
         </div>
       </motion.div>
 
@@ -162,20 +162,20 @@ export default function Home() {
       </motion.section>
 
       {/* ── Weekly Bar Chart ──────────────────────────────────────── */}
-      <motion.section variants={item} className="bg-white/[0.03] border border-white/[0.06] rounded-[2rem] p-6">
+      <motion.section variants={item} className="bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] rounded-[2rem] p-6 shadow-sm">
         <div className="flex items-center justify-between mb-5">
-          <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">7-Day Trend</p>
+          <p className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em]">7-Day Trend</p>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Attendance %</span>
+            <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Attendance %</span>
           </div>
         </div>
         <div className="h-40">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={weeklyData} barSize={28}>
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#4b5563', fontSize: 10, fontWeight: 700 }} dy={8} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: isDark ? '#a1a1aa' : '#4b5563', fontSize: 10, fontWeight: 700 }} dy={8} />
               <Tooltip
-                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }}
                 content={({ active, payload }) => active && payload?.length ? (
                   <div className="bg-black/80 border border-white/10 px-3 py-1.5 rounded-xl">
                     <p className="text-[11px] font-black text-white">{Math.round(payload[0].value)}%</p>

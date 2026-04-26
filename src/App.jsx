@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -18,19 +19,28 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  useEffect(() => {
+    const theme = localStorage.getItem('theme');
+    if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <Toaster position="bottom-center" toastOptions={{
         style: {
-          background: '#0f172a',
-          color: '#fff',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: '#ffffff',
+          color: '#09090b',
+          border: '1px solid #e4e4e7',
           borderRadius: '1rem',
           padding: '0.75rem 1.25rem',
           fontSize: '13px',
           fontWeight: '500',
         },
-        success: { iconTheme: { primary: '#10b981', secondary: '#0f172a' } },
+        success: { iconTheme: { primary: '#10b981', secondary: '#ffffff' } },
         error: { iconTheme: { primary: '#f87171', secondary: '#000' } },
       }} />
       <Router>

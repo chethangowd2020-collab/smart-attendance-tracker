@@ -20,11 +20,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center px-6 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 relative overflow-hidden font-sans">
       {/* Background Orbs */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-emerald-600/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full animate-pulse delay-700" />
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-emerald-500/5 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-500/5 blur-[120px] rounded-full animate-pulse delay-700" />
       </div>
 
       <motion.div 
@@ -40,37 +40,37 @@ export default function Login() {
           >
             <GraduationCap className="text-white" size={32} />
           </motion.div>
-          <h1 className="text-5xl font-black text-white tracking-tighter mb-2 text-center">TRACKIFY</h1>
-          <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.4em] text-center">Your Academic Identity</p>
+          <h1 className="text-5xl font-black text-zinc-900 tracking-tighter mb-2 text-center">TRACKIFY</h1>
+          <p className="text-zinc-500 font-black text-[10px] uppercase tracking-[0.4em] text-center">Your Academic Identity</p>
         </div>
 
-        <div className="glass-card p-10 rounded-[3.5rem] border border-white/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[3.5rem] pointer-events-none" />
+        <div className="bg-zinc-50 p-10 rounded-[3.5rem] border border-zinc-200 shadow-2xl relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-100 to-transparent rounded-[3.5rem] pointer-events-none" />
           
           <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-emerald-400 uppercase tracking-widest ml-1">Email Address</label>
+              <label className="block text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1">Email Address</label>
               <div className="relative group">
                 <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-emerald-400 transition-colors" size={18} />
                 <input 
                   type="email" required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-5 pl-14 text-white focus:ring-2 focus:ring-emerald-500/50 focus:bg-white/[0.05] outline-none font-bold transition-all placeholder:text-zinc-700"
+                  className="w-full bg-white border border-zinc-200 rounded-2xl p-5 pl-14 text-zinc-900 focus:ring-2 focus:ring-emerald-500/50 outline-none font-bold transition-all placeholder:text-zinc-400"
                   placeholder="name@university.com"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-emerald-400 uppercase tracking-widest ml-1">Password</label>
+              <label className="block text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1">Password</label>
               <div className="relative group">
                 <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-emerald-400 transition-colors" size={18} />
                 <input 
                   type="password" required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-5 pl-14 text-white focus:ring-2 focus:ring-emerald-500/50 focus:bg-white/[0.05] outline-none font-bold transition-all placeholder:text-zinc-700"
+                  className="w-full bg-white border border-zinc-200 rounded-2xl p-5 pl-14 text-zinc-900 focus:ring-2 focus:ring-emerald-500/50 outline-none font-bold transition-all placeholder:text-zinc-400"
                   placeholder="••••••••"
                 />
               </div>
