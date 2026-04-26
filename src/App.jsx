@@ -21,20 +21,18 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <AuthProvider>
-      <Toaster position="top-center" toastOptions={{
+      <Toaster position="bottom-center" toastOptions={{
         style: {
-          background: 'rgba(0, 0, 0, 0.8)',
+          background: '#1a1a1a',
           color: '#fff',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '1.5rem',
-          padding: '1rem 1.5rem',
-          fontSize: '11px',
-          fontWeight: '900',
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+          border: '1px solid #262626',
+          borderRadius: '1rem',
+          padding: '0.75rem 1.25rem',
+          fontSize: '13px',
+          fontWeight: '500',
         },
+        success: { iconTheme: { primary: '#4ade80', secondary: '#000' } },
+        error: { iconTheme: { primary: '#f87171', secondary: '#000' } },
       }} />
       <Router>
         <Routes>

@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { format, parseISO } from 'date-fns';
-import { 
-  Trash2, Calendar as CalendarIcon, Filter, Search, 
-  CheckCircle2, XCircle, Slash, History as HistoryIcon, 
-  Clock, Database, ArrowRight
+import { format } from 'date-fns';
+import {
+  Trash2, Search, CheckCircle2, XCircle, Slash, History as HistoryIcon,
+  Filter, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -14,178 +13,199 @@ import toast from 'react-hot-toast';
 export default function AttendanceHistory() {
   const [selectedSubjectId, setSelectedSubjectId] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFilter, setShowFilter] = useState(false);
 
   const subjects = useLiveQuery(() => db.subjects.toArray(), []);
+
   const records = useLiveQuery(async () => {
-    let query = db.attendance_records;
+    let query = db.attendance_records.orderBy('date').reverse();
     if (selectedSubjectId !== 'all') {
-      query = query.where('subjectId').equals(Number(selectedSubjectId));
+      query = db.attendance_records.where('subjectId').equals(Number(selectedSubjectId));
     }
     const results = await query.toArray();
     return results.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   }, [selectedSubjectId]);
 
-  const handleDeleteRecord = async (record) => {
-    if (!confirm('Delete this record? This will update your attendance percentage.')) return;
+  const filteredRecords = records?.filter(r => {
+    if (!searchQuery) return true;
+    const sub = subjects?.find(s => s.id === r.subjectId);
+    return sub?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.date?.includes(searchQuery) ||
+      r.status?.includes(searchQuery.toLowerCase());
+  });
 
+  const handleDelete = async (record) => {
     try {
-      await db.transaction('rw', db.subjects, db.attendance_records, async () => {
-        const subject = await db.subjects.get(record.subjectId);
-        if (!subject) return;
-
-        let newAttended = subject.attendedClasses;
-        let newTotal = subject.totalClasses;
-
-        if (record.status === 'present') {
-          newAttended--;
-          newTotal--;
-        } else if (record.status === 'absent') {
-          newTotal--;
-        }
-
-        await db.subjects.update(record.subjectId, {
-          attendedClasses: newAttended,
-          totalClasses: newTotal
-        });
-
-        await db.attendance_records.delete(record.id);
-      });
-      toast.success('Record purged', { icon: '🗑️' });
-    } catch (e) {
-      toast.error('Purge failed');
-    }
+      const sub = await db.subjects.get(record.subjectId);
+      if (sub) {
+        let newAttended = sub.attendedClasses;
+        let newTotal = sub.totalClasses;
+        if (record.status === 'present') { newAttended--; newTotal--; }
+        else if (record.status === 'absent') { newTotal--; }
+        await db.subjects.update(record.subjectId, { attendedClasses: newAttended, totalClasses: newTotal });
+      }
+      await db.attendance_records.delete(record.id);
+      toast.success('Record deleted');
+    } catch { toast.error('Delete failed'); }
   };
 
-  const filteredRecords = records?.filter(r => {
-    const subject = subjects?.find(s => s.id === r.subjectId);
-    if (!subject) return false;
-    return subject.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const statusConfig = {
+    present: { icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/10', dot: 'bg-green-400', label: 'Present' },
+    absent: { icon: XCircle, color: 'text-red-400', bg: 'bg-red-500/10', dot: 'bg-red-400', label: 'Absent' },
+    cancelled: { icon: Slash, color: 'text-[#737373]', bg: 'bg-[#1a1a1a]', dot: 'bg-[#555]', label: 'Cancelled' },
+  };
+
+  // Group records by date
+  const groupedByDate = {};
+  filteredRecords?.forEach(r => {
+    const d = r.date || 'Unknown';
+    if (!groupedByDate[d]) groupedByDate[d] = [];
+    groupedByDate[d].push(r);
   });
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-8 max-w-2xl mx-auto pb-32"
-    >
-      <header className="px-3">
-        <h1 className="text-4xl font-black text-white tracking-tighter mb-1">HISTORY</h1>
-        <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.3em]">Attendance Audit Logs</p>
-      </header>
+    <div className="max-w-[470px] mx-auto">
 
-      {/* Filters */}
-      <div className="space-y-4 px-3">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-700" size={18} />
-            <input 
-              type="text" 
-              placeholder="SEARCH AUDIT LOGS..."
-              className="w-full bg-white/5 border border-white/10 rounded-[2rem] py-5 pl-14 pr-6 text-white text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-blue-600/20 transition-all shadow-inner placeholder:text-gray-900"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+      {/* Header */}
+      <div className="px-4 py-4 border-b border-[#262626]">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-xl font-bold text-white">History</h1>
+            <p className="text-xs text-[#737373]">{filteredRecords?.length || 0} records</p>
           </div>
-          <div className="relative">
-            <select 
-              className="w-full sm:w-auto bg-white/5 border border-white/10 rounded-[2rem] py-5 px-8 text-white text-[10px] font-black uppercase tracking-widest outline-none appearance-none pr-14 shadow-inner focus:ring-4 focus:ring-blue-600/20 transition-all"
-              value={selectedSubjectId}
-              onChange={(e) => setSelectedSubjectId(e.target.value)}
-            >
-              <option value="all">ALL ENTITIES</option>
-              {subjects?.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-            <Filter className="absolute right-6 top-1/2 -translate-y-1/2 text-blue-500 pointer-events-none" size={16} />
-          </div>
+          <button
+            onClick={() => setShowFilter(!showFilter)}
+            className={clsx(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+              showFilter ? 'bg-white text-black' : 'bg-[#1a1a1a] text-[#737373] hover:text-white'
+            )}
+          >
+            <Filter size={14} />
+            Filter
+          </button>
         </div>
-      </div>
 
-      {/* Records List */}
-      <section className="px-3 space-y-5">
-        <AnimatePresence mode="popLayout">
-          {!filteredRecords || filteredRecords.length === 0 ? (
-            <motion.div 
-              key="empty"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="text-center py-28 glass-card rounded-[4rem] border-2 border-dashed border-white/5"
+        {/* Search */}
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#737373]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search records..."
+            className="w-full bg-[#1a1a1a] rounded-xl pl-9 pr-4 py-2.5 text-white text-sm outline-none placeholder:text-[#555] border border-[#262626] focus:border-[#363636]"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <X size={14} className="text-[#737373]" />
+            </button>
+          )}
+        </div>
+
+        {/* Filter subjects */}
+        <AnimatePresence>
+          {showFilter && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden mt-3"
             >
-              <div className="bg-white/5 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
-                <Database className="text-gray-800" size={40} />
-              </div>
-              <p className="text-gray-600 font-black uppercase tracking-[0.2em] text-sm">Vault records missing</p>
-              <p className="text-gray-800 text-[10px] font-bold mt-2 uppercase tracking-[0.3em]">Initialize tracking to populate logs</p>
-            </motion.div>
-          ) : (
-            filteredRecords.map((record, index) => {
-              const subject = subjects?.find(s => s.id === record.subjectId);
-              if (!subject) return null;
-
-              return (
-                <motion.div 
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: Math.min(index * 0.03, 0.3) }}
-                  key={record.id} 
-                  className="glass-card rounded-[3rem] p-7 flex items-center justify-between group border border-white/5 relative overflow-hidden active:scale-[0.99] transition-all shadow-xl"
-                >
-                  <div className="flex items-center gap-6 relative z-10">
-                    <div className={clsx(
-                      "w-14 h-14 rounded-[1.25rem] flex items-center justify-center border-2 transition-all duration-500 shadow-lg",
-                      record.status === 'present' ? "bg-blue-600/10 border-blue-600/30 text-blue-400 shadow-blue-600/5" :
-                      record.status === 'absent' ? "bg-red-600/10 border-red-600/30 text-red-400 shadow-red-600/5" : "bg-gray-600/10 border-gray-600/30 text-gray-500"
-                    )}>
-                      {record.status === 'present' && <CheckCircle2 size={28} />}
-                      {record.status === 'absent' && <XCircle size={28} />}
-                      {record.status === 'cancelled' && <Slash size={28} />}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-black text-white flex items-center gap-3 tracking-tighter leading-tight mb-2 uppercase">
-                        {subject.name}
-                        {record.timetableId && (
-                          <div className="p-1.5 bg-blue-600/10 rounded-lg border border-blue-500/20">
-                            <Clock size={10} className="text-blue-400" />
-                          </div>
-                        )}
-                      </h3>
-                      <div className="flex items-center gap-3">
-                        <CalendarIcon size={12} className="text-gray-700" />
-                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
-                          {format(parseISO(record.date), 'MMM do, yyyy')}
-                        </p>
-                        <ArrowRight size={10} className="text-gray-800" />
-                        <span className="text-[9px] font-black text-gray-800 uppercase tracking-widest">Logged</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 relative z-10">
-                    <span className={clsx(
-                      "text-[9px] font-black uppercase px-4 py-1.5 rounded-full border tracking-widest",
-                      record.status === 'present' ? "bg-blue-600/10 border-blue-600/20 text-blue-400" :
-                      record.status === 'absent' ? "bg-red-600/10 border-red-600/20 text-red-400" : "bg-gray-600/10 border-gray-600/20 text-gray-500"
-                    )}>
-                      {record.status}
-                    </span>
-                    <motion.button 
-                      whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => handleDeleteRecord(record)}
-                      className="p-3.5 text-gray-800 hover:text-red-500 transition-all bg-white/5 rounded-2xl border border-white/5 opacity-0 group-hover:opacity-100"
+              <div className="overflow-x-auto scrollbar-hide">
+                <div className="flex gap-2 pb-1">
+                  <button
+                    onClick={() => setSelectedSubjectId('all')}
+                    className={clsx(
+                      'shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors',
+                      selectedSubjectId === 'all' ? 'bg-white text-black' : 'bg-[#1a1a1a] text-[#737373] hover:text-white'
+                    )}
+                  >
+                    All
+                  </button>
+                  {subjects?.map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedSubjectId(String(s.id))}
+                      className={clsx(
+                        'shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap',
+                        selectedSubjectId === String(s.id) ? 'bg-white text-black' : 'bg-[#1a1a1a] text-[#737373] hover:text-white'
+                      )}
                     >
-                      <Trash2 size={18} />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              );
-            })
+                      {s.name.length > 12 ? s.name.slice(0, 12) + '…' : s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
-      </section>
-    </motion.div>
+      </div>
+
+      {/* Records */}
+      {!filteredRecords || filteredRecords.length === 0 ? (
+        <div className="py-20 text-center px-8">
+          <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4">
+            <HistoryIcon size={28} className="text-[#555]" />
+          </div>
+          <p className="text-white font-semibold mb-1">No records yet</p>
+          <p className="text-[#737373] text-sm">Mark attendance on the Home page to see history here</p>
+        </div>
+      ) : (
+        <div>
+          {Object.entries(groupedByDate).map(([date, dateRecords]) => (
+            <div key={date} className="border-b border-[#262626]">
+              {/* Date header */}
+              <div className="px-4 pt-4 pb-2">
+                <p className="text-[#737373] text-xs font-semibold">
+                  {date === 'Unknown' ? 'Unknown Date' : format(new Date(date), 'EEEE, MMMM d, yyyy')}
+                </p>
+              </div>
+
+              {/* Records for this date */}
+              <div className="divide-y divide-[#111]">
+                {dateRecords.map(record => {
+                  const sub = subjects?.find(s => s.id === record.subjectId);
+                  const cfg = statusConfig[record.status] || statusConfig.cancelled;
+                  const Icon = cfg.icon;
+
+                  return (
+                    <AnimatePresence key={record.id}>
+                      <motion.div
+                        layout
+                        exit={{ opacity: 0, x: -40, height: 0 }}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#0a0a0a] transition-colors"
+                      >
+                        {/* Status dot */}
+                        <div className={clsx('w-2.5 h-2.5 rounded-full shrink-0', cfg.dot)} />
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{sub?.name || 'Unknown Subject'}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Icon size={12} className={cfg.color} />
+                            <span className={clsx('text-xs font-medium capitalize', cfg.color)}>{record.status}</span>
+                          </div>
+                        </div>
+
+                        {/* Delete */}
+                        <motion.button
+                          whileTap={{ scale: 0.85 }}
+                          onClick={() => handleDelete(record)}
+                          className="p-2 rounded-full hover:bg-[#1a1a1a] transition-colors"
+                        >
+                          <Trash2 size={15} className="text-[#555] hover:text-red-400 transition-colors" />
+                        </motion.button>
+                      </motion.div>
+                    </AnimatePresence>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="h-6" />
+    </div>
   );
 }
