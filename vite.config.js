@@ -17,7 +17,7 @@ export default defineConfig({
       manifest: {
         name: 'Trackify',
         short_name: 'Trackify',
-        description: 'Track attendance and academic performance.',
+        description: 'Efficient and smart attendance tracking.',
         theme_color: '#4f46e5',
         background_color: '#ffffff',
         display: 'standalone',
