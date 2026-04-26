@@ -11,6 +11,9 @@ app.use(express.json({ limit: '50mb' }));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'trackify-secret-key-123';
 
+// Initialize DB
+db.initDb().then(() => console.log('Database initialized'));
+
 // Middleware to verify JWT
 const authenticate = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -32,21 +35,24 @@ app.post('/api/auth/register', async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const info = db.prepare('INSERT INTO users (email, password) VALUES (?, ?)').run(email, hashedPassword);
+    const result = await db.query('INSERT INTO users (email, password) VALUES ($1, $2)', [email, hashedPassword]);
+    const userId = result.lastInsertRowid || (result.rows[0] && result.rows[0].id);
     
-    const token = jwt.sign({ id: info.lastInsertRowid, email }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: info.lastInsertRowid, email } });
+    const token = jwt.sign({ id: userId, email }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: userId, email } });
   } catch (err) {
-    if (err.message.includes('UNIQUE constraint failed')) {
+    if (err.message.includes('UNIQUE constraint failed') || err.message.includes('unique constraint')) {
       return res.status(400).json({ error: 'Email already exists' });
     }
+    console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+  const user = result.rows[0];
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(400).json({ error: 'Invalid credentials' });
@@ -57,39 +63,39 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Sync Routes
-app.post('/api/sync/push', authenticate, (req, res) => {
-  const { data } = req.body; // { semesters: [], subjects: [], ... }
+app.post('/api/sync/push', authenticate, async (req, res) => {
+  const { data } = req.body;
   
-  const upsert = db.transaction((userId, tables) => {
-    for (const [dataType, content] of Object.entries(tables)) {
-      db.prepare(`
-        INSERT INTO user_data (userId, dataType, content, updated_at) 
-        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(id) DO UPDATE SET content = excluded.content, updated_at = CURRENT_TIMESTAMP
-      `).run(userId, dataType, JSON.stringify(content));
+  try {
+    // Delete old data for this user
+    await db.query('DELETE FROM user_data WHERE userId = $1', [req.userId]);
+    
+    // Insert new data
+    for (const [dataType, content] of Object.entries(data)) {
+      await db.query('INSERT INTO user_data (userId, dataType, content) VALUES ($1, $2, $3)', [req.userId, dataType, JSON.stringify(content)]);
     }
-  });
 
-  // Simple approach: Delete old data and insert new for this user
-  db.prepare('DELETE FROM user_data WHERE userId = ?').run(req.userId);
-  
-  const insert = db.prepare('INSERT INTO user_data (userId, dataType, content) VALUES (?, ?, ?)');
-  for (const [dataType, content] of Object.entries(data)) {
-    insert.run(req.userId, dataType, JSON.stringify(content));
+    res.json({ success: true, message: 'Data synced successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Sync failed' });
   }
-
-  res.json({ success: true, message: 'Data synced successfully' });
 });
 
-app.get('/api/sync/pull', authenticate, (req, res) => {
-  const data = db.prepare('SELECT dataType, content FROM user_data WHERE userId = ?').all(req.userId);
-  
-  const result = {};
-  data.forEach(row => {
-    result[row.dataType] = JSON.parse(row.content);
-  });
-  
-  res.json({ data: result });
+app.get('/api/sync/pull', authenticate, async (req, res) => {
+  try {
+    const result = await db.query('SELECT dataType, content FROM user_data WHERE userId = $1', [req.userId]);
+    
+    const data = {};
+    result.rows.forEach(row => {
+      data[row.dataType] = JSON.parse(row.content);
+    });
+    
+    res.json({ data });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Fetch failed' });
+  }
 });
 
 const PORT = process.env.PORT || 5000;

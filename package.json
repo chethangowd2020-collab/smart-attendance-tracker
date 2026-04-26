@@ -7,6 +7,7 @@
     "dev": "concurrently \"npm run frontend\" \"npm run server\"",
     "frontend": "vite --host",
     "server": "node server/server.js",
+    "tunnel": "concurrently \"lt --port 5173\" \"lt --port 5000\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -43,6 +44,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "localtunnel": "^2.0.2",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.2.4",
     "vite": "^8.0.10"
